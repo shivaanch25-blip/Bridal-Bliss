@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}My Custom Bridal Style - AI Results{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <div class="text-center mb-5">
+        <h2 class="text-rose" style="color: var(--primary-color);"><i class="bi bi-stars text-warning me-2 animate-pulse"></i>Your Personalized Bridal Match</h2>
+        <p class="text-muted">Calculated using our Hybrid Recommendation Engine: Jaccard style similarity, budget constraints, and Geolocation mappings.</p>
+    </div>
+
+    <!-- Diagnostic Summary -->
+    <div class="glass-panel p-4 mb-5 shadow-sm border border-light bg-light">
+        <h5 class="fw-bold mb-3"><i class="bi bi-shield-check me-2 text-success"></i>Diagnostic Styling Profile:</h5>
+        <div class="row g-3 small">
+            <div class="col-6 col-md-3"><strong>Skin Theme:</strong> {{ skin_tone }}</div>
+            <div class="col-6 col-md-3"><strong>Face Shape:</strong> {{ face_shape }}</div>
+            <div class="col-6 col-md-3"><strong>Hair Length:</strong> {{ hair_length }}</div>
+            <div class="col-6 col-md-3"><strong>wedding Theme:</strong> {{ wedding_theme }}</div>
+            <div class="col-6 col-md-4"><strong>Jewelry:</strong> {{ jewelry_style }}</div>
+            <div class="col-6 col-md-4"><strong>Colors:</strong> {{ colors if colors else 'Red, Gold' }}</div>
+            <div class="col-6 col-md-4"><strong>Budget Limit:</strong> {{ budget | currency }}</div>
+        </div>
+    </div>
+
+    <!-- Best Matched Preset Look -->
+    {% if look %}
+    <div class="glass-panel p-5 mb-5 shadow-sm border border-light">
+        <div class="row align-items-center g-5">
+            <div class="col-md-5 text-center">
+                <img src="{{ look.image_url }}" alt="{{ look.name }}" class="img-fluid rounded shadow border border-light" style="max-height: 400px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=500&q=80'">
+            </div>
+            <div class="col-md-7 text-start">
+                <span class="badge bg-light text-rose border border-rose mb-3">Best Matches: 98% Score</span>
+                <h3>Matched Aesthetic: {{ look.name }}</h3>
+                <p class="text-secondary mb-4">{{ look.description }}</p>
+                <div class="p-3 bg-light rounded border border-light small mb-4">
+                    <div class="row g-2">
+                        <div class="col-6"><strong>💄 Makeup:</strong> {{ look.makeup_style[:50] }}...</div>
+                        <div class="col-6"><strong>💇 Hair:</strong> {{ look.hairstyle[:50] }}...</div>
+                        <div class="col-6"><strong>💎 Jewelry:</strong> {{ look.jewelry_style[:50] }}...</div>
+                        <div class="col-6"><strong>👗 Outfit:</strong> {{ look.outfit_style[:50] }}...</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('studio.look_detail', look_id=look.id) }}" class="btn btn-luxury"><i class="bi bi-eye-fill me-2"></i>View Full Look Styling Guide</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Custom Match Outfits & Jewelry -->
+    <div class="mb-5">
+        <h3 class="mb-4 text-center"><i class="bi bi-gift-fill text-rose me-2"></i>AI Custom Product Matches</h3>
+        <div class="row g-4">
+            {% for p in products %}
+            <div class="col-md-4">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'">
+                    </div>
+                    <div class="card-body-luxury">
+                        <span class="badge bg-light text-rose border border-rose align-self-start mb-2 text-uppercase small" style="font-size: 0.65rem;">{{ p.budget_tier }}</span>
+                        <h5 class="fw-bold mb-2">{{ p.name }}</h5>
+                        <p class="small text-muted mb-4">{{ p.description[:60] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <span class="fw-bold text-rose">{{ p.price | currency }}</span>
+                            <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="btn btn-luxury btn-sm">Shop Match</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Match Salons -->
+    <div class="mb-5">
+        <h3 class="mb-4 text-center"><i class="bi bi-shop text-rose me-2"></i>Calculated Custom Salon Recommendations</h3>
+        <div class="row g-4">
+            {% for salon in salons %}
+            <div class="col-md-4">
+                <div class="glass-panel p-4 shadow-sm border border-light d-flex flex-column h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-rose border border-rose"><i class="bi bi-star-fill text-warning me-1"></i>{{ salon.rating }}</span>
+                        <span class="small text-muted"><i class="bi bi-briefcase me-1"></i>{{ salon.experience_years }} yrs Exp</span>
+                    </div>
+                    <h4 class="mb-2">{{ salon.name }}</h4>
+                    <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ salon.address }}, {{ salon.city }}</p>
+                    <p class="small text-secondary mb-4">{{ salon.description[:100] }}...</p>
+                    <a href="{{ url_for('main.salon_detail', salon_id=salon.id) }}" class="btn btn-luxury btn-sm mt-auto w-100"><i class="bi bi-calendar-check me-2"></i>Book Makeover Session</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

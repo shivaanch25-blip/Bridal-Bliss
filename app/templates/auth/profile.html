@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}My Styling Profile - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 text-center shadow-sm border border-light">
+                <div class="mb-4">
+                    {% if pref and pref.face_image_path %}
+                        <img src="{{ pref.face_image_path }}" alt="My Profile Photo" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 150px; height: 150px; border: 2px dashed var(--primary-light);">
+                            <i class="bi bi-person-bounding-box fs-1 text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <h3 class="mb-1">{{ current_user.username }}</h3>
+                <p class="text-muted small mb-3"><i class="bi bi-envelope me-1"></i>{{ current_user.email }}</p>
+                <span class="badge bg-light text-rose border border-rose mb-4 px-3 py-2"><i class="bi bi-balloon-heart-fill me-1 text-rose"></i>Bride Role</span>
+                
+                <hr class="my-4">
+                
+                <div class="d-flex flex-column gap-2 text-start">
+                    <a href="{{ url_for('shop.orders_list') }}" class="btn btn-outline-luxury w-100 text-start"><i class="bi bi-box-seam me-2"></i>Track Orders</a>
+                    <a href="{{ url_for('studio.budget_planner') }}" class="btn btn-outline-luxury w-100 text-start"><i class="bi bi-pie-chart me-2"></i>My Budget Plan</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preferences Form -->
+        <div class="col-lg-8">
+            <div class="glass-panel p-5 shadow-sm border border-light">
+                <h2 class="mb-2">AI Styling Preferences</h2>
+                <p class="text-muted mb-4">Set your design aesthetics to help our hybrid matchmaking engine recommend matching products, outfits, jewelry, and coordinate nearby salon packages.</p>
+                
+                <form action="{{ url_for('auth.profile') }}" method="POST" enctype="multipart/form-data">
+                    <div class="row g-3">
+                        <!-- Skin Tone -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Skin Tone / Tone Theme</label>
+                            <select name="skin_tone" class="form-select">
+                                <option value="Fair" {% if pref and pref.skin_tone == 'Fair' %}selected{% endif %}>Fair (Ivory / Pastel Hues)</option>
+                                <option value="Medium" {% if pref and pref.skin_tone == 'Medium' %}selected{% endif %}>Medium (Warm Gold / Peach)</option>
+                                <option value="Dusk" {% if pref and pref.skin_tone == 'Dusk' %}selected{% endif %}>Dusk (Earth tones / Rich Crimson)</option>
+                                <option value="Deep" {% if pref and pref.skin_tone == 'Deep' %}selected{% endif %}>Deep (Royal Bronze / Emerald)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Face Shape -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Face Shape</label>
+                            <select name="face_shape" class="form-select">
+                                <option value="Oval" {% if pref and pref.face_shape == 'Oval' %}selected{% endif %}>Oval</option>
+                                <option value="Round" {% if pref and pref.face_shape == 'Round' %}selected{% endif %}>Round</option>
+                                <option value="Heart" {% if pref and pref.face_shape == 'Heart' %}selected{% endif %}>Heart</option>
+                                <option value="Square" {% if pref and pref.face_shape == 'Square' %}selected{% endif %}>Square</option>
+                            </select>
+                        </div>
+
+                        <!-- Hair Length -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Hair Length</label>
+                            <select name="hair_length" class="form-select">
+                                <option value="Short" {% if pref and pref.hair_length == 'Short' %}selected{% endif %}>Short (Bob / Chin length)</option>
+                                <option value="Medium" {% if pref and pref.hair_length == 'Medium' %}selected{% endif %}>Medium (Shoulder / Collarbone)</option>
+                                <option value="Long" {% if pref and pref.hair_length == 'Long' %}selected{% endif %}>Long (Mid-back or longer)</option>
+                            </select>
+                        </div>
+
+                        <!-- Theme -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Wedding Theme</label>
+                            <select name="wedding_theme" class="form-select">
+                                <option value="Traditional Gujarati" {% if pref and pref.wedding_theme == 'Traditional Gujarati' %}selected{% endif %}>Traditional Gujarati</option>
+                                <option value="Royal Rajput" {% if pref and pref.wedding_theme == 'Royal Rajput' %}selected{% endif %}>Royal Rajput</option>
+                                <option value="South Indian" {% if pref and pref.wedding_theme == 'South Indian' %}selected{% endif %}>South Indian</option>
+                                <option value="Bengali" {% if pref and pref.wedding_theme == 'Bengali' %}selected{% endif %}>Bengali</option>
+                                <option value="Minimalist" {% if pref and pref.wedding_theme == 'Minimalist' %}selected{% endif %}>Minimalist</option>
+                                <option value="Modern Luxury" {% if pref and pref.wedding_theme == 'Modern Luxury' %}selected{% endif %}>Modern Luxury</option>
+                            </select>
+                        </div>
+
+                        <!-- Jewelry style -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Preferred Jewelry Style</label>
+                            <select name="jewelry_style" class="form-select">
+                                <option value="Kundan" {% if pref and pref.jewelry_style == 'Kundan' %}selected{% endif %}>Kundan</option>
+                                <option value="Temple" {% if pref and pref.jewelry_style == 'Temple' %}selected{% endif %}>Temple</option>
+                                <option value="Diamond" {% if pref and pref.jewelry_style == 'Diamond' %}selected{% endif %}>Diamond</option>
+                                <option value="Antique Gold" {% if pref and pref.jewelry_style == 'Antique Gold' %}selected{% endif %}>Antique Gold</option>
+                            </select>
+                        </div>
+
+                        <!-- Color Palettes -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Preferred Colors (comma separated)</label>
+                            <input type="text" name="preferred_colors" class="form-control" placeholder="e.g. Red, Gold, Ivory, Pink" value="{{ pref.preferred_colors if pref else 'Red, Gold' }}">
+                        </div>
+
+                        <!-- Budget -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold small">Total Wedding Styling Budget (₹)</label>
+                            <input type="number" name="budget" class="form-control" placeholder="e.g. 200000" value="{{ pref.budget if pref else 150000.0 }}" min="1000" step="5000">
+                            {% if budget %}
+                                <div class="mt-3 p-3 bg-light rounded border border-light">
+                                    <span class="small fw-bold d-block mb-2 text-rose"><i class="bi bi-sliders me-1"></i>Automatic Budget Plan Allocation:</span>
+                                    <div class="row g-2 small">
+                                        <div class="col-4">👗 Outfit: {{ budget.dress_budget | currency }}</div>
+                                        <div class="col-4">💎 Jewelry: {{ budget.jewelry_budget | currency }}</div>
+                                        <div class="col-4">💄 Makeup: {{ budget.makeup_budget | currency }}</div>
+                                        <div class="col-6">👠 Acc: {{ budget.accessories_budget | currency }}</div>
+                                        <div class="col-6">🚨 Buffer: {{ budget.emergency_budget | currency }}</div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Upload Photo -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-bold small"><i class="bi bi-camera-fill me-1 text-rose"></i>Upload Your Portrait Photo (AI Styling Diagnostic)</label>
+                            <input type="file" name="face_image" class="form-control">
+                            <div class="form-text small text-muted">Upload a clear selfie or front face photo for simulated skin tone and face shape calculations.</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury w-100 mt-4"><i class="bi bi-check2-circle me-2"></i>Save Preferences & Calibrate AI</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

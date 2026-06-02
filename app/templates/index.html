@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Bridal Bliss - AI-Powered Bridal Shopping & Styling Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div class="container text-center text-white hero-content">
+        <h1>Discover Your Perfect Bridal Bliss</h1>
+        <p>Curated AI Looks, Exquisite Bridal Catalog, and Precision Salon Matching for Your Special Day</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('studio.gallery') }}" class="btn btn-luxury"><i class="bi bi-stars me-2"></i>Explore AI Look Studio</a>
+            <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline-light btn-lg px-4" style="border-radius: 30px;">Shop Bridal Collections</a>
+        </div>
+    </div>
+</div>
+
+<!-- Category Showcase -->
+<section class="bg-white">
+    <div class="container text-center">
+        <h2 class="mb-2">Shop Our Exquisite Collections</h2>
+        <p class="text-muted mb-5">Handpicked premium jewelry, gowns, and packages designed to complete your bridal transformation</p>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=500&q=80" alt="Dresses" class="card-img">
+                    </div>
+                    <div class="card-body-luxury text-center">
+                        <h4 class="card-title-luxury">Dresses & Lehengas</h4>
+                        <p class="small text-muted mb-3">Velvet, silk, and organza masterpieces</p>
+                        <a href="{{ url_for('shop.catalog', category=5) }}" class="btn btn-luxury btn-sm w-100">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=500&q=80" alt="Jewelry" class="card-img">
+                    </div>
+                    <div class="card-body-luxury text-center">
+                        <h4 class="card-title-luxury">Bridal Jewelry</h4>
+                        <p class="small text-muted mb-3">Kundan, temple, and diamond chokers</p>
+                        <a href="{{ url_for('shop.catalog', category=9) }}" class="btn btn-luxury btn-sm w-100">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&q=80" alt="Makeup Kits" class="card-img">
+                    </div>
+                    <div class="card-body-luxury text-center">
+                        <h4 class="card-title-luxury">Cosmetic Packages</h4>
+                        <p class="small text-muted mb-3">Professional glow kits and lipsticks</p>
+                        <a href="{{ url_for('shop.catalog', category=13) }}" class="btn btn-luxury btn-sm w-100">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=500&q=80" alt="Accessories" class="card-img">
+                    </div>
+                    <div class="card-body-luxury text-center">
+                        <h4 class="card-title-luxury">Accessories</h4>
+                        <p class="small text-muted mb-3">Silk footwear and beaded clutches</p>
+                        <a href="{{ url_for('shop.catalog', category=15) }}" class="btn btn-luxury btn-sm w-100">Explore</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Studio Banner -->
+<section style="background-color: var(--light-bg); border-top: 1px solid rgba(183, 110, 121, 0.1);">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-md-6">
+                <div class="glass-panel p-5">
+                    <h2 class="mb-4">AI Bridal Styling Studio</h2>
+                    <p class="lead mb-4">Unsure what bridal aesthetic matches your persona? Let our Hybrid AI Matcher curate your custom dream look.</p>
+                    <p class="text-muted mb-4">Input your wedding theme, budget, skin tone, and face shape (with portrait uploads) to instantly match lehengas, jewelry pairings, and local salons capable of creating the look.</p>
+                    <a href="{{ url_for('studio.customizer') }}" class="btn btn-luxury"><i class="bi bi-magic me-2"></i>Launch AI Customizer</a>
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&q=80" alt="AI Makeup Match" class="img-fluid rounded-4 shadow-lg border border-white border-4" style="max-height: 450px; object-fit: cover;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Salon Directory Finder -->
+<section class="bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Find Nearby Bridal Salons & Artists</h2>
+            <p class="text-muted">Search coordinates and pin codes to see geolocated distance estimates to high-end salon centers in Gujarat and other cities</p>
+        </div>
+        
+        <!-- Search bar -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8">
+                <form action="{{ url_for('main.salons_list') }}" method="GET" class="glass-panel p-4 shadow-sm border border-light">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="small fw-bold mb-1"><i class="bi bi-geo-alt-fill me-1 text-rose"></i>Select City</label>
+                            <select name="city" class="form-select">
+                                <option value="">Select City...</option>
+                                <option value="Vadodara">Vadodara (Gujarat)</option>
+                                <option value="Ahmedabad">Ahmedabad (Gujarat)</option>
+                                <option value="Surat">Surat (Gujarat)</option>
+                                <option value="Rajkot">Rajkot (Gujarat)</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Bangalore">Bangalore</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold mb-1"><i class="bi bi-hash me-1 text-rose"></i>Pincode</label>
+                            <input type="text" name="pincode" class="form-control" placeholder="e.g. 390007">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-luxury w-100"><i class="bi bi-search me-2"></i>Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Featured Salons -->
+        <div class="row g-4">
+            {% for s in salons %}
+            <div class="col-md-4">
+                <div class="card-luxury">
+                    <div class="card-body-luxury">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-light text-rose border border-rose"><i class="bi bi-star-fill me-1 text-warning"></i>{{ s.rating }}</span>
+                            <span class="small text-muted"><i class="bi bi-briefcase me-1"></i>{{ s.experience_years }} yrs Exp</span>
+                        </div>
+                        <h4 class="mb-2">{{ s.name }}</h4>
+                        <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i>{{ s.address }}, {{ s.city }}</p>
+                        <p class="card-text small mb-4 text-secondary">{{ s.description[:110] }}...</p>
+                        <a href="{{ url_for('main.salon_detail', salon_id=s.id) }}" class="btn btn-outline-luxury btn-sm mt-auto w-100">View Services & Book</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

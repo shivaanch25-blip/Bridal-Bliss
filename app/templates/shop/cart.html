@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">My Shopping Cart</h2>
+    
+    {% if not items %}
+    <div class="glass-panel p-5 text-center shadow-sm border border-light">
+        <i class="bi bi-cart-x fs-1 text-muted d-block mb-3"></i>
+        <h4>Your Cart is Empty</h4>
+        <p class="text-muted mb-4">You haven't added any bridal gowns or jewelry items to your cart yet.</p>
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-luxury">Browse Shop Catalog</a>
+    </div>
+    {% else %}
+    <div class="row g-4">
+        <!-- Cart Items List -->
+        <div class="col-lg-8">
+            <div class="glass-panel p-4 shadow-sm border border-light d-flex flex-column gap-3">
+                {% for item in items %}
+                <div class="row align-items-center g-3 p-3 bg-light rounded border border-light">
+                    <!-- Image -->
+                    <div class="col-md-2 text-center">
+                        <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="rounded shadow-sm" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=100&q=80'">
+                    </div>
+                    <!-- Details -->
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-1 text-truncate">{{ item.product.name }}</h5>
+                        <span class="small text-muted">{{ item.product.price | currency }} each</span>
+                    </div>
+                    <!-- Quantity Update Form -->
+                    <div class="col-md-3">
+                        <form action="{{ url_for('shop.cart_view') }}" method="POST" class="d-flex align-items-center">
+                            <input type="hidden" name="action" value="update">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <input type="number" name="quantity" class="form-control form-control-sm me-2" value="{{ item.quantity }}" min="1" max="10" onchange="this.form.submit()">
+                        </form>
+                    </div>
+                    <!-- Total & Remove -->
+                    <div class="col-md-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-rose">{{ item.total | currency }}</span>
+                        <form action="{{ url_for('shop.cart_view') }}" method="POST">
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Summary Panel -->
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-center pb-2 border-bottom">Billing Summary</h4>
+                
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Subtotal</span>
+                    <span>{{ subtotal | currency }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 small text-secondary">
+                    <span>GST (18% standard)</span>
+                    <span>{{ gst | currency }}</span>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="fw-bold">Grand Total</span>
+                    <span class="fw-bold text-rose fs-4">{{ total | currency }}</span>
+                </div>
+                
+                <div class="d-flex flex-column gap-2">
+                    <a href="{{ url_for('shop.checkout') }}" class="btn btn-luxury w-100"><i class="bi bi-credit-card me-2"></i>Proceed to Checkout</a>
+                    <a href="{{ url_for('shop.catalog') }}" class="btn btn-outline-secondary btn-sm w-100 text-center">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

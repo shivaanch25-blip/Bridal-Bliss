@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}AI Virtual Try-On - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <div class="text-center mb-5">
+        <h2 class="text-rose" style="color: var(--primary-color);"><i class="bi bi-stars text-warning me-2 animate-pulse"></i>AI Virtual Try-On Studio</h2>
+        <p class="text-muted">Align ornaments or gowns onto your silhouette. Drag sliders to adjust scale, position, and rotation parameters.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Interactive Canvas Viewport -->
+        <div class="col-lg-7">
+            <div class="glass-panel p-4 shadow-sm border border-light text-center bg-dark" style="min-height: 480px; position: relative;">
+                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 z-3"><i class="bi bi-cpu-fill me-1"></i>Try-On Active</span>
+                
+                <!-- Canvas Element -->
+                <canvas id="tryonCanvas" width="500" height="500" class="rounded shadow border border-light mx-auto bg-secondary" style="max-width: 100%; height: auto; display: block;"></canvas>
+            </div>
+        </div>
+
+        <!-- Try-On Controls -->
+        <div class="col-lg-5">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-sliders me-2"></i>Calibration Controls</h4>
+                
+                <div class="mb-4 p-3 bg-light rounded small border border-light">
+                    <h6 class="fw-bold mb-2">Selected Product:</h6>
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=100&q=80'">
+                        <div>
+                            <span class="fw-bold text-dark d-block">{{ product.name }}</span>
+                            <span class="text-rose fw-semibold">{{ product.price | currency }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sliders -->
+                <div class="mb-3">
+                    <label class="small fw-semibold mb-1">Scale: <span class="text-rose fw-bold" id="scaleVal">1.0x</span></label>
+                    <input type="range" id="sliderScale" class="form-range" min="0.1" max="2.5" step="0.05" value="1.0" oninput="drawCanvas()">
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-semibold mb-1">Position X: <span class="text-rose fw-bold" id="posXVal">250px</span></label>
+                    <input type="range" id="sliderX" class="form-range" min="0" max="500" step="5" value="250" oninput="drawCanvas()">
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-semibold mb-1">Position Y: <span class="text-rose fw-bold" id="posYVal">250px</span></label>
+                    <input type="range" id="sliderY" class="form-range" min="0" max="500" step="5" value="250" oninput="drawCanvas()">
+                </div>
+
+                <div class="mb-4">
+                    <label class="small fw-semibold mb-1">Rotation: <span class="text-rose fw-bold" id="rotVal">0°</span></label>
+                    <input type="range" id="sliderRot" class="form-range" min="-180" max="180" step="2" value="0" oninput="drawCanvas()">
+                </div>
+
+                <!-- Diagnostic Face scanning outline toggle (looks very tech-heavy!) -->
+                <div class="mb-4 form-check form-switch p-3 bg-light rounded border border-light ms-0 ps-5">
+                    <input class="form-switch-input form-check-input" type="checkbox" role="switch" id="scanningGrid" onchange="drawCanvas()">
+                    <label class="form-check-label small fw-semibold" for="scanningGrid">Enable Facial Alignment Mesh Grid (Simulated Scanner)</label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-luxury w-100" onclick="alert('Try-On Capture Saved to Profile!')"><i class="bi bi-camera-fill me-2"></i>Save Snapshot</button>
+                    <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" class="btn btn-outline-secondary btn-sm w-100 text-center d-flex align-items-center justify-content-center">Back to Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const canvas = document.getElementById('tryonCanvas');
+const ctx = canvas.getContext('2d');
+
+// Load images
+const bgImage = new Image();
+const overlayImage = new Image();
+
+let bgLoaded = false;
+let overlayLoaded = false;
+
+// Set sources
+// Background is user preference image if uploaded, otherwise outline silhouette
+bgImage.src = "{% if pref and pref.face_image_path %}{{ pref.face_image_path }}{% else %}https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=500&q=80{% endif %}";
+overlayImage.src = "{{ product.image_url }}";
+
+bgImage.onload = () => {
+    bgLoaded = true;
+    drawCanvas();
+};
+overlayImage.onload = () => {
+    overlayLoaded = true;
+    drawCanvas();
+};
+
+function drawCanvas() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. Draw User portrait background
+    if (bgLoaded) {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    } else {
+        // Draw outline placeholder text
+        ctx.fillStyle = '#6c757d';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '20px Montserrat';
+        ctx.fillText('Loading silhouette scanner...', 120, 250);
+    }
+
+    // 2. Simulated Face Scanning Mesh Grid
+    const scanningGridActive = document.getElementById('scanningGrid').checked;
+    if (scanningGridActive) {
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)'; // glowing gold
+        ctx.lineWidth = 1;
+        
+        // draw vertical grid lines
+        for(let x = 50; x < canvas.width; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        // draw horizontal grid lines
+        for(let y = 50; y < canvas.height; y += 50) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+        
+        // draw face scanner oval circle
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(250, 220, 120, 160, 0, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Scanning text overlay
+        ctx.fillStyle = '#d4af37';
+        ctx.font = 'bold 11px Montserrat';
+        ctx.fillText('AI GEOMETRIC MESH ACTIVE', 20, 40);
+        ctx.fillText('FACE FIT TRACK: SECURE', 20, 55);
+    }
+
+    // 3. Draw Product overlay
+    if (overlayLoaded) {
+        // Retrieve slider inputs
+        const scale = parseFloat(document.getElementById('sliderScale').value);
+        const posX = parseInt(document.getElementById('sliderX').value);
+        const posY = parseInt(document.getElementById('sliderY').value);
+        const rotDeg = parseInt(document.getElementById('sliderRot').value);
+        
+        // Update label printouts
+        document.getElementById('scaleVal').innerText = scale.toFixed(2) + 'x';
+        document.getElementById('posXVal').innerText = posX + 'px';
+        document.getElementById('posYVal').innerText = posY + 'px';
+        document.getElementById('rotVal').innerText = rotDeg + '°';
+
+        // Translate and Rotate canvas context
+        ctx.save();
+        ctx.translate(posX, posY);
+        ctx.rotate(rotDeg * Math.PI / 180);
+        
+        // Compute size
+        // Width of product scaled
+        const ow = overlayImage.width;
+        const oh = overlayImage.height;
+        const aspect = ow / oh;
+        
+        // Base width for overlay on canvas
+        const baseWidth = 150;
+        const w = baseWidth * scale;
+        const h = (baseWidth / aspect) * scale;
+        
+        // Draw centered on translate coords
+        ctx.drawImage(overlayImage, -w/2, -h/2, w, h);
+        
+        ctx.restore();
+    }
+}
+</script>
+{% endblock %}

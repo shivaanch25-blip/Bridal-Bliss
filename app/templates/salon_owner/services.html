@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Services - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Back to dashboard link -->
+    <div class="mb-4">
+        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Service Form -->
+        <div class="col-lg-5">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-journal-plus me-2"></i>Add New Service Package</h4>
+                
+                <form action="{{ url_for('owner.manage_services') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="service_name" class="form-label fw-semibold small">Service Name</label>
+                        <input type="text" name="service_name" class="form-control" id="service_name" placeholder="e.g. Bridal HD Airbrush Makeover" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label fw-semibold small">Service Category</label>
+                        <select name="category" id="category" class="form-select" required>
+                            <option value="makeup">Makeup (Bridal Makeup / Base Packages)</option>
+                            <option value="hair">Hair (Hairstyling / Gajra braid / curls)</option>
+                            <option value="styling">Styling (Dupatta draping / Jewelry matching)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="price" class="form-label fw-semibold small">Service Fee (₹)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">₹</span>
+                            <input type="number" name="price" class="form-control" id="price" placeholder="e.g. 15000" min="0" step="100" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury w-100 py-2"><i class="bi bi-check-lg me-2"></i>Add Service</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Services Menu List -->
+        <div class="col-lg-7">
+            <div class="glass-panel p-4 shadow-sm border border-light h-100">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-journal-text me-2"></i>Active Makeover Menu</h4>
+                
+                {% if not services %}
+                    <p class="text-muted text-center py-5">No services listed yet. Add your first service package on the left form!</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Service Name</th>
+                                    <th>Category</th>
+                                    <th>Fee</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in services %}
+                                <tr>
+                                    <td><strong>{{ s.service_name }}</strong></td>
+                                    <td><span class="badge bg-light text-rose border border-rose text-capitalize">{{ s.category }}</span></td>
+                                    <td class="fw-bold text-rose">{{ s.price | currency }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('owner.delete_service', service_id=s.id) }}" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

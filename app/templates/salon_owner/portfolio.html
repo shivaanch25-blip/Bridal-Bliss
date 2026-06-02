@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Portfolio - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Back link -->
+    <div class="mb-4">
+        <a href="{{ url_for('owner.dashboard') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Add Portfolio entry -->
+        <div class="col-lg-5">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-image-fill me-2"></i>Add Transformation</h4>
+                
+                <form action="{{ url_for('owner.manage_portfolio') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold small">Transformation Description</label>
+                        <textarea name="description" class="form-control" id="description" rows="2" placeholder="e.g. Traditional Gujarati panetar draping with soft dewy cheeks" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="before_url" class="form-label fw-semibold small">Before Portrait Image Path / URL</label>
+                        <input type="text" name="before_url" class="form-control" id="before_url" value="/static/images/portfolio/s1_b.jpg" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="after_url" class="form-label fw-semibold small">After Portrait Image Path / URL</label>
+                        <input type="text" name="after_url" class="form-control" id="after_url" value="/static/images/portfolio/s1_a.jpg" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury w-100 py-2"><i class="bi bi-plus-lg me-2"></i>Publish Transformation</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Portfolio Entries list -->
+        <div class="col-lg-7">
+            <div class="glass-panel p-4 shadow-sm border border-light h-100">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-images me-2"></i>Published Before/After Transformations</h4>
+                
+                {% if not items %}
+                    <p class="text-muted text-center py-5">No transformations listed yet. Add your first before/after mapping on the left form!</p>
+                {% else %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for item in items %}
+                        <div class="p-3 bg-light rounded border border-light">
+                            <div class="row align-items-center g-2 mb-3">
+                                <div class="col-5 text-center">
+                                    <span class="small d-block mb-1 text-muted">Before</span>
+                                    <img src="{{ item.before_image_url }}" alt="Before" class="img-thumbnail rounded" style="max-height: 80px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=100&q=80'">
+                                </div>
+                                <div class="col-5 text-center">
+                                    <span class="small d-block mb-1 text-rose">After</span>
+                                    <img src="{{ item.after_image_url }}" alt="After" class="img-thumbnail rounded border border-rose" style="max-height: 80px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=100&q=80'">
+                                </div>
+                                <div class="col-2 text-end">
+                                    <a href="{{ url_for('owner.delete_portfolio', portfolio_id=item.id) }}" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></a>
+                                </div>
+                            </div>
+                            <p class="m-0 small text-secondary"><strong>Transformation Notes:</strong> "{{ item.description }}"</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

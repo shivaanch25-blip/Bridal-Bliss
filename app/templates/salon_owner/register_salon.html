@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Register My Salon - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="glass-panel p-5 shadow border border-light">
+                <div class="text-center mb-4">
+                    <i class="bi bi-shop fs-1 text-rose" style="color: var(--primary-color);"></i>
+                    <h2 class="mt-2">Register Your Bridal Salon</h2>
+                    <p class="text-muted small">Establish your business on the Bridal Bliss Marketplace and connect with brides seeking makeovers</p>
+                </div>
+                
+                <form action="{{ url_for('owner.register_salon') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="name" class="form-label fw-semibold small">Salon Name</label>
+                            <input type="text" name="name" class="form-control" id="name" placeholder="e.g. Royal Makeover Studio" required>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="description" class="form-label fw-semibold small">Business Description</label>
+                            <textarea name="description" class="form-control" id="description" rows="3" placeholder="Tell brides about your team, capability, and specialties (e.g. traditional Gujarati drapes, airbrush makeup...)" required></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="contact" class="form-label fw-semibold small">Contact Number</label>
+                            <input type="text" name="contact" class="form-control" id="contact" placeholder="e.g. +91 98765 43210" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="pincode" class="form-label fw-semibold small">Postal Pincode</label>
+                            <input type="text" name="pincode" class="form-control" id="pincode" placeholder="e.g. 390007" required>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="address" class="form-label fw-semibold small">Address</label>
+                            <input type="text" name="address" class="form-control" id="address" placeholder="Flat/Shop, Street, Landmark" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="city" class="form-label fw-semibold small">City</label>
+                            <input type="text" name="city" class="form-control" id="city" placeholder="e.g. Vadodara" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="state" class="form-label fw-semibold small">State</label>
+                            <input type="text" name="state" class="form-control" id="state" placeholder="e.g. Gujarat" required>
+                        </div>
+
+                        <h5 class="fw-bold mt-4 pt-3 border-top text-rose"><i class="bi bi-compass me-2"></i>Map Geolocation Coordinates</h5>
+                        <p class="small text-muted mb-2">Provide precise coordinates so that local brides can find you based on Haversine distance calculations.</p>
+                        
+                        <div class="col-md-6">
+                            <label for="latitude" class="form-label fw-semibold small">Latitude</label>
+                            <input type="number" step="0.000001" name="latitude" class="form-control" id="latitude" value="22.3072" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="longitude" class="form-label fw-semibold small">Longitude</label>
+                            <input type="number" step="0.000001" name="longitude" class="form-control" id="longitude" value="73.1812" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-luxury w-100 mt-4 py-2"><i class="bi bi-shield-check me-2"></i>Submit Salon Registration</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="glass-panel p-5 shadow border border-light">
+                <div class="text-center mb-4">
+                    <i class="bi bi-balloon-heart-fill fs-1" style="color: var(--primary-color);"></i>
+                    <h2 class="mt-2">Create Account</h2>
+                    <p class="text-muted small">Begin your personalized bridal aesthetic journey</p>
+                </div>
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="role" class="form-label fw-semibold small">Choose Your Account Type</label>
+                        <select name="role" id="role" class="form-select" required>
+                            <option value="bride">Bride / Customer (Browse & Book)</option>
+                            <option value="salon_owner">Salon Owner / Makeup Artist (Manage salon & receive bookings)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold small">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0" id="username" placeholder="Choose a unique username" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold small">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                            <input type="email" name="email" class="form-control border-start-0" id="email" placeholder="Enter email address" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0" id="password" placeholder="Create a strong password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-luxury w-100 mb-3">Create Bliss Account</button>
+                </form>
+                <div class="text-center mt-2">
+                    <p class="small text-muted">Already have a Bridal Bliss account? <a href="{{ url_for('auth.login') }}" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

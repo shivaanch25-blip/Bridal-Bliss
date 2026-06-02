@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Bridal Salons Finder - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2>Geolocated Salon Finder</h2>
+        <p class="text-muted">Search coordinates and pinpoint top-rated makeup artists and bridal hair studios near you</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sidebar filters -->
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-rose" style="color: var(--primary-color);"><i class="bi bi-filter-left me-1"></i>Search Location</h4>
+                
+                <form action="{{ url_for('main.salons_list') }}" method="GET" class="d-flex flex-column gap-3">
+                    <div>
+                        <label class="small fw-semibold mb-1">Search Keywords</label>
+                        <input type="text" name="q" class="form-control" placeholder="e.g. Artistry, Makeover" value="{{ request.args.get('q', '') }}">
+                    </div>
+                    
+                    <div>
+                        <label class="small fw-semibold mb-1">Select City</label>
+                        <select name="city" class="form-select">
+                            <option value="">All Cities...</option>
+                            <option value="Vadodara" {% if request.args.get('city') == 'Vadodara' %}selected{% endif %}>Vadodara (Gujarat)</option>
+                            <option value="Ahmedabad" {% if request.args.get('city') == 'Ahmedabad' %}selected{% endif %}>Ahmedabad (Gujarat)</option>
+                            <option value="Surat" {% if request.args.get('city') == 'Surat' %}selected{% endif %}>Surat (Gujarat)</option>
+                            <option value="Rajkot" {% if request.args.get('city') == 'Rajkot' %}selected{% endif %}>Rajkot (Gujarat)</option>
+                            <option value="Mumbai" {% if request.args.get('city') == 'Mumbai' %}selected{% endif %}>Mumbai</option>
+                            <option value="Delhi" {% if request.args.get('city') == 'Delhi' %}selected{% endif %}>Delhi</option>
+                            <option value="Bangalore" {% if request.args.get('city') == 'Bangalore' %}selected{% endif %}>Bangalore</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="small fw-semibold mb-1">Postal Pincode</label>
+                        <input type="text" name="pincode" class="form-control" placeholder="e.g. 390007" value="{{ request.args.get('pincode', '') }}">
+                    </div>
+
+                    <div>
+                        <label class="small fw-semibold mb-1">Service Type</label>
+                        <select name="service" class="form-select">
+                            <option value="">All Services...</option>
+                            <option value="makeup" {% if request.args.get('service') == 'makeup' %}selected{% endif %}>Bridal Makeup</option>
+                            <option value="hair" {% if request.args.get('service') == 'hair' %}selected{% endif %}>Hair Styling</option>
+                            <option value="styling" {% if request.args.get('service') == 'styling' %}selected{% endif %}>Jewelry & Dupatta Draping</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="small fw-semibold mb-1">Max Distance Radius: <span class="text-rose fw-bold">{{ distance | round }} km</span></label>
+                        <input type="range" name="distance" class="form-range" min="5" max="150" step="5" value="{{ distance }}" oninput="this.nextElementSibling.innerText = this.value + ' km'">
+                        <span class="small text-muted d-block text-end" style="display: none;">{{ distance }} km</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury w-100 mt-2"><i class="bi bi-search me-2"></i>Apply Filters</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Salons list grid -->
+        <div class="col-lg-8">
+            {% if not salons %}
+            <div class="glass-panel p-5 text-center shadow-sm border border-light">
+                <i class="bi bi-geo-alt-fill fs-1 text-muted d-block mb-3"></i>
+                <h4>No Salons Found</h4>
+                <p class="text-muted">We couldn't find approved salons matching your coordinates. Check spelling or expand radius limits!</p>
+            </div>
+            {% else %}
+            
+                {% if has_coords %}
+                <div class="alert alert-light border border-light small mb-4 py-2 d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-compass text-rose me-1"></i>Location calibrator active. Results sorted by proximity distance.</span>
+                </div>
+                {% endif %}
+
+                <div class="d-flex flex-column gap-4">
+                    {% for item in salons %}
+                    {% set s = item.salon %}
+                    <div class="glass-panel p-4 shadow-sm border border-light animate__animated animate__fadeIn">
+                        <div class="row align-items-start g-3">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-light text-rose border border-rose"><i class="bi bi-star-fill text-warning me-1"></i>{{ s.rating }}</span>
+                                    <span class="small text-muted"><i class="bi bi-briefcase me-1"></i>{{ s.experience_years }} yrs Exp</span>
+                                    {% if has_coords %}
+                                        <span class="badge bg-light text-rose border border-rose"><i class="bi bi-geo-alt me-1"></i>{{ item.distance | round(1) }} km away</span>
+                                    {% endif %}
+                                </div>
+                                <h4 class="mb-2">{{ s.name }}</h4>
+                                <p class="small text-muted mb-2"><i class="bi bi-house me-1"></i>{{ s.address }}, {{ s.city }} (Pincode: {{ s.pincode }})</p>
+                                <p class="small text-secondary mb-0">{{ s.description[:180] }}...</p>
+                            </div>
+                            
+                            <div class="col-md-4 text-md-end d-flex flex-column gap-2 h-100 justify-content-between pt-md-2" style="min-height: 120px;">
+                                <div class="small text-muted"><i class="bi bi-telephone-fill text-rose me-1"></i>{{ s.contact_number }}</div>
+                                <a href="{{ url_for('main.salon_detail', salon_id=s.id) }}" class="btn btn-luxury btn-sm mt-auto"><i class="bi bi-calendar-check me-2"></i>Book Makeover</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

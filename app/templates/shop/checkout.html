@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <h2 class="mb-4 text-center">Secure Checkout</h2>
+    
+    <div class="row g-4">
+        <!-- Billing Details Form -->
+        <div class="col-lg-7">
+            <div class="glass-panel p-5 shadow-sm border border-light">
+                <h4 class="mb-4 text-rose" style="color: var(--primary-color);"><i class="bi bi-truck me-2"></i>Shipping & Billing Details</h4>
+                
+                <form action="{{ url_for('shop.simulate_payment') }}" method="POST" id="checkoutForm">
+                    <div class="mb-3">
+                        <label for="shipping_address" class="form-label fw-semibold small">Delivery Address</label>
+                        <textarea name="shipping_address" id="shipping_address" class="form-control" rows="3" placeholder="Enter full street address, landmark, and pincode" required></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="phone" class="form-label fw-semibold small">Contact Phone Number</label>
+                        <input type="text" name="phone" id="phone" class="form-control" placeholder="e.g. +91 98765 43210" required>
+                    </div>
+
+                    <h4 class="mb-3 text-rose pt-3 border-top" style="color: var(--primary-color);"><i class="bi bi-wallet2 me-2"></i>Select Payment Method</h4>
+                    
+                    <div class="mb-4">
+                        <div class="form-check p-3 rounded border border-light mb-2 bg-light d-flex align-items-center">
+                            <input class="form-check-input ms-1 me-3" type="radio" name="payment_method" id="payRazorpay" value="Razorpay" checked>
+                            <label class="form-check-label fw-semibold d-flex align-items-center w-100" for="payRazorpay">
+                                <i class="bi bi-credit-card-2-front text-primary fs-3 me-2"></i> Razorpay (Simulated Cards, Netbanking, UPI)
+                            </label>
+                        </div>
+                        
+                        <div class="form-check p-3 rounded border border-light bg-light d-flex align-items-center">
+                            <input class="form-check-input ms-1 me-3" type="radio" name="payment_method" id="payStripe" value="Stripe">
+                            <label class="form-check-label fw-semibold d-flex align-items-center w-100" for="payStripe">
+                                <i class="bi bi-stripe text-info fs-3 me-2"></i> Stripe Checkout (Simulated Credit Cards)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Simulator control panel (User requested mock success/failure response) -->
+                    <div class="mb-4 p-3 bg-light rounded border border-warning">
+                        <span class="small fw-bold text-warning d-block mb-2"><i class="bi bi-cpu-fill me-1"></i>Mock Payment Simulator Options:</span>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="simulate_status" id="simSuccess" value="success" checked>
+                                <label class="form-check-label small" for="simSuccess">Simulate Success (Complete Order)</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="simulate_status" id="simFailure" value="failure">
+                                <label class="form-check-label small" for="simFailure">Simulate Failure (Decline Payment)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury w-100 py-3"><i class="bi bi-shield-lock-fill me-2"></i>Confirm Simulated Payment</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Checkout summary -->
+        <div class="col-lg-5">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-center pb-2 border-bottom">Order Items</h4>
+                
+                <div class="d-flex flex-column gap-3 mb-4 max-height-300 overflow-y-auto">
+                    {% for item in items %}
+                    <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded small">
+                        <span class="text-truncate" style="max-width: 250px;">{{ item.product.name }}</span>
+                        <span class="text-rose fw-bold">x{{ item.quantity }}</span>
+                        <span class="text-muted">{{ (item.product.price * item.quantity) | currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between mb-2 small text-secondary">
+                    <span>Subtotal</span>
+                    <span>{{ subtotal | currency }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3 small text-secondary">
+                    <span>GST (18%)</span>
+                    <span>{{ gst | currency }}</span>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold">Grand Total</span>
+                    <span class="fw-bold text-rose fs-4">{{ total | currency }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

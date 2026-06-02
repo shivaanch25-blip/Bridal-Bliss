@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Dashboard - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Header panel -->
+    <div class="glass-panel p-4 mb-4 shadow-sm border border-light d-flex justify-content-between align-items-center flex-wrap g-3">
+        <div>
+            <h2>Dashboard: {{ salon.name }}</h2>
+            <p class="text-muted m-0"><i class="bi bi-geo-alt me-1"></i>{{ salon.city }}, {{ salon.state }} | Rating: ⭐{{ salon.rating }}</p>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('owner.manage_services') }}" class="btn btn-outline-luxury"><i class="bi bi-journal-text me-2"></i>Services Menu</a>
+            <a href="{{ url_for('owner.manage_portfolio') }}" class="btn btn-outline-luxury"><i class="bi bi-images me-2"></i>Transformations Portfolio</a>
+        </div>
+    </div>
+
+    <!-- Approval Warnings -->
+    {% if not salon.is_approved %}
+    <div class="alert alert-warning p-4 shadow-sm border border-warning d-flex align-items-center mb-4">
+        <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+        <div>
+            <h5 class="alert-heading m-0 fw-bold">Salon Registration Pending Approval</h5>
+            <p class="small m-0 text-secondary mt-1">Your salon is currently hidden from brides. An administrator will review your coordinates and details shortly to activate your business listing!</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Metrics row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Pending Bookings</span>
+                <span class="fs-2 fw-bold text-warning">{{ pending | length }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Active Bookings</span>
+                <span class="fs-2 fw-bold text-primary">{{ confirmed | length }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Completed Sessions</span>
+                <span class="fs-2 fw-bold text-success">{{ completed | length }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light bg-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Total Revenue</span>
+                <span class="fs-2 fw-bold text-rose" style="color: var(--primary-color);">{{ revenue | currency }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="glass-panel p-4 shadow-sm border border-light bg-white h-100">
+                <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-bar-chart-line me-2"></i>Monthly Booking Request Vol</h5>
+                <canvas id="bookingsChart" style="max-height: 230px;"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="glass-panel p-4 shadow-sm border border-light bg-white h-100">
+                <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-pie-chart me-2"></i>Revenue Shares by Services</h5>
+                <canvas id="revenueChart" style="max-height: 230px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Appointments -->
+    <div class="glass-panel p-4 mb-4 shadow-sm border border-light">
+        <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-calendar-check me-2"></i>Pending Booking Requests</h4>
+        
+        {% if not pending %}
+            <p class="text-muted text-center py-4">No pending appointment requests.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Bride Name</th>
+                            <th>Bridal Look</th>
+                            <th>Date & Slot</th>
+                            <th>Service Type</th>
+                            <th>Price</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in pending %}
+                        <tr>
+                            <td><strong>{{ b.user.username }}</strong></td>
+                            <td>{{ b.look.name if b.look else 'Custom Style' }}</td>
+                            <td>{{ b.appointment_date }}<br><span class="text-muted">{{ b.time_slot }}</span></td>
+                            <td>{% if b.home_service %}<span class="badge bg-light text-rose border border-rose">Home Service</span>{% else %}<span class="badge bg-light text-secondary border border-secondary">In Salon</span>{% endif %}</td>
+                            <td class="fw-bold text-rose">{{ b.total_price | currency }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('owner.update_appointment_status', booking_id=b.id, action='confirm') }}" class="btn btn-success btn-sm me-1 px-3"><i class="bi bi-check-lg"></i> Confirm</a>
+                                <a href="{{ url_for('owner.update_appointment_status', booking_id=b.id, action='reject') }}" class="btn btn-outline-danger btn-sm px-3"><i class="bi bi-x-lg"></i> Decline</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Active Appointments -->
+    <div class="glass-panel p-4 shadow-sm border border-light">
+        <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);"><i class="bi bi-calendar-check-fill me-2"></i>Confirmed Booking Schedules</h4>
+        
+        {% if not confirmed %}
+            <p class="text-muted text-center py-4">No confirmed active schedules.</p>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Bride Name</th>
+                            <th>Bridal Look</th>
+                            <th>Date & Slot</th>
+                            <th>Service Type</th>
+                            <th>Price</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in confirmed %}
+                        <tr>
+                            <td><strong>{{ b.user.username }}</strong></td>
+                            <td>{{ b.look.name if b.look else 'Custom Style' }}</td>
+                            <td>{{ b.appointment_date }}<br><span class="text-muted">{{ b.time_slot }}</span></td>
+                            <td>{% if b.home_service %}<span class="badge bg-light text-rose border border-rose">Home Service</span>{% else %}<span class="badge bg-light text-secondary border border-secondary">In Salon</span>{% endif %}</td>
+                            <td class="fw-bold text-rose">{{ b.total_price | currency }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('owner.update_appointment_status', booking_id=b.id, action='complete') }}" class="btn btn-luxury btn-sm me-1 px-3"><i class="bi bi-bookmark-check-fill me-1"></i>Mark Complete</a>
+                                <a href="{{ url_for('owner.update_appointment_status', booking_id=b.id, action='reject') }}" class="btn btn-outline-danger btn-sm px-3"><i class="bi bi-x-lg"></i> Cancel</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Monthly Bookings Bar Chart
+    const ctxBar = document.getElementById('bookingsChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun (Current)'],
+            datasets: [{
+                label: 'Bookings Volume',
+                data: [5, 9, 12, 16, 21, {{ pending|length + confirmed|length + completed|length }}],
+                backgroundColor: 'rgba(183, 110, 121, 0.6)',
+                borderColor: 'rgba(183, 110, 121, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 2. Revenue Distribution doughnut chart
+    const ctxPie = document.getElementById('revenueChart').getContext('2d');
+    const totalRev = {{ revenue }};
+    const makeupShare = totalRev > 0 ? totalRev * 0.65 : 12000.0;
+    const hairShare = totalRev > 0 ? totalRev * 0.25 : 4000.0;
+    const stylingShare = totalRev > 0 ? totalRev * 0.10 : 2000.0;
+    
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Bridal Makeup', 'Hair Styling', 'Dupatta Draping'],
+            datasets: [{
+                data: [makeupShare, hairShare, stylingShare],
+                backgroundColor: ['#b76e79', '#d9a0a8', '#d4af37'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right' }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

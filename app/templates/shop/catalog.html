@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Bridal Bliss - Premium Collections{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar filters -->
+        <div class="col-lg-3">
+            <div class="glass-panel p-4 mb-4 shadow-sm border border-light">
+                <h4 class="mb-3 text-rose" style="color: var(--primary-color);">Filter Categories</h4>
+                <div class="list-group list-group-flush mb-4">
+                    <a href="{{ url_for('shop.catalog') }}" class="list-group-item list-group-item-action {% if not selected_cat %}active{% endif %} bg-transparent border-0 ps-0 fw-semibold text-dark">
+                        <i class="bi bi-grid-fill me-2 text-rose"></i>All Collections
+                    </a>
+                    {% for cat in categories %}
+                        {% if not cat.parent_id %}
+                        <div class="mb-2">
+                            <a href="{{ url_for('shop.catalog', category=cat.id) }}" class="list-group-item list-group-item-action {% if selected_cat|int == cat.id %}active text-rose fw-bold{% endif %} bg-transparent border-0 ps-0 fw-medium text-dark pb-1">
+                                <i class="bi bi-heart-fill me-2 text-rose small"></i>{{ cat.name }}
+                            </a>
+                            <div class="ps-3 d-flex flex-column gap-1">
+                                {% for sub in cat.subcategories %}
+                                <a href="{{ url_for('shop.catalog', category=sub.id) }}" class="small text-decoration-none {% if selected_cat|int == sub.id %}text-rose fw-bold{% else %}text-muted{% endif %}" style="font-size: 0.85rem;">
+                                    • {{ sub.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <h4 class="mb-3 text-rose" style="color: var(--primary-color);">Sort By</h4>
+                <form action="{{ url_for('shop.catalog') }}" method="GET" id="sortForm">
+                    {% if selected_cat %}<input type="hidden" name="category" value="{{ selected_cat }}">{% endif %}
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                    <select name="sort" class="form-select mb-3" onchange="document.getElementById('sortForm').submit()">
+                        <option value="new" {% if sort == 'new' %}selected{% endif %}>Newest Additions</option>
+                        <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+            <div class="glass-panel p-4 mb-4 shadow-sm border border-light d-flex justify-content-between align-items-center flex-wrap g-3">
+                <h2 class="m-0">Bridal Catalog</h2>
+                <form action="{{ url_for('shop.catalog') }}" method="GET" class="d-flex" style="width: 320px;">
+                    {% if selected_cat %}<input type="hidden" name="category" value="{{ selected_cat }}">{% endif %}
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search lehengas, jewelry..." value="{{ q or '' }}">
+                        <button type="submit" class="btn btn-luxury"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+            </div>
+
+            {% if not products %}
+                <div class="text-center py-5 glass-panel border border-light">
+                    <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+                    <h4>No Products Found</h4>
+                    <p class="text-muted">We couldn't find items matching your filters. Try search adjustments!</p>
+                </div>
+            {% else %}
+                <div class="row g-4">
+                    {% for p in products %}
+                    <div class="col-md-4">
+                        <div class="card-luxury">
+                            <div class="card-img-wrap">
+                                <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'">
+                                <button class="btn btn-light rounded-circle shadow position-absolute top-0 end-0 m-3 d-flex align-items-center justify-content-center" 
+                                        style="width: 38px; height: 38px; z-index: 10;" 
+                                        onclick="toggleWishlist({{ p.id }}, this)">
+                                    <i class="bi {% if p.id in wishlist_ids %}bi-heart-fill text-danger{% else %}bi-heart{% endif %} fs-5"></i>
+                                </button>
+                            </div>
+                            <div class="card-body-luxury">
+                                <span class="badge bg-light text-rose border border-rose align-self-start mb-2 text-uppercase small" style="font-size: 0.7rem;">{{ p.budget_tier }}</span>
+                                <h4 class="card-title-luxury mb-2">{{ p.name }}</h4>
+                                <p class="card-text small text-muted mb-4">{{ p.description[:60] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <span class="fs-5 fw-bold text-rose">{{ p.price | currency }}</span>
+                                    <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="btn btn-luxury btn-sm">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleWishlist(productId, btnElement) {
+    fetch("{{ url_for('shop.toggle_wishlist') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            const icon = btnElement.querySelector('i');
+            if(data.action === 'added') {
+                icon.className = 'bi bi-heart-fill text-danger fs-5';
+            } else {
+                icon.className = 'bi bi-heart fs-5';
+            }
+        } else {
+            alert(data.message || "Please log in as a Bride to save wishlists.");
+        }
+    })
+    .catch(err => console.error(err));
+}
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">My Order History</h2>
+    
+    {% if not orders %}
+    <div class="glass-panel p-5 text-center shadow-sm border border-light">
+        <i class="bi bi-box-seam-fill fs-1 text-muted d-block mb-3"></i>
+        <h4>No Orders Placed Yet</h4>
+        <p class="text-muted mb-4">You have not completed any shopping transactions on Bridal Bliss.</p>
+        <a href="{{ url_for('shop.catalog') }}" class="btn btn-luxury">Visit Shop Catalog</a>
+    </div>
+    {% else %}
+    <div class="d-flex flex-column gap-4">
+        {% for order in orders %}
+        <div class="glass-panel p-4 shadow-sm border border-light">
+            <div class="row align-items-center g-3">
+                <div class="col-md-3">
+                    <h5 class="fw-bold mb-1">Order #BB-ORD-{{ order.id }}</h5>
+                    <span class="small text-muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="col-md-4">
+                    <span class="small d-block mb-1 text-muted"><strong>Deliver To:</strong></span>
+                    <p class="small text-secondary m-0">{{ order.shipping_address }}</p>
+                </div>
+                <div class="col-md-2">
+                    <span class="small d-block mb-1 text-muted"><strong>Total Paid:</strong></span>
+                    <span class="fw-bold text-rose">{{ order.total_amount | currency }}</span>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <span class="badge {% if order.status == 'Delivered' %}bg-success{% elif order.status == 'Paid' or order.status == 'Shipped' %}bg-primary{% else %}bg-secondary{% endif %} px-3 py-2">
+                        {{ order.status }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Items break down -->
+            <div class="mt-4 pt-3 border-top bg-light p-3 rounded">
+                <span class="small fw-bold d-block mb-2 text-rose">Order Details:</span>
+                <div class="row g-2 small">
+                    {% for item in order.items %}
+                    <div class="col-md-6 d-flex justify-content-between border-bottom pb-1">
+                        <span>{{ item.product.name }} <strong>x{{ item.quantity }}</strong></span>
+                        <span class="fw-semibold">{{ (item.price * item.quantity) | currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

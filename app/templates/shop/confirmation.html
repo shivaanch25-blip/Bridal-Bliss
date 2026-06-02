@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Order Confirmed - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="glass-panel p-5 shadow-sm border border-light mx-auto animate__animated animate__zoomIn" style="max-width: 600px;">
+        <i class="bi bi-patch-check-fill text-success" style="font-size: 5rem;"></i>
+        <h2 class="mt-4 mb-2">Order Confirmed!</h2>
+        <p class="text-muted mb-4">Your simulated payment was processed successfully. Thank you for shopping with Bridal Bliss!</p>
+        
+        <div class="bg-light rounded p-4 text-start border border-light mb-4 small">
+            <h5 class="fw-bold mb-3 pb-2 border-bottom">Summary</h5>
+            <div class="mb-2"><strong>Order Reference:</strong> #BB-ORD-{{ order.id }}</div>
+            <div class="mb-2"><strong>Recipient Address:</strong> {{ order.shipping_address }}</div>
+            <div class="mb-2"><strong>Contact Number:</strong> {{ order.phone }}</div>
+            <div class="mb-2"><strong>Amount Paid (incl. GST):</strong> {{ order.total_amount | currency }}</div>
+            <div class="mb-2"><strong>Payment Gateway:</strong> {{ order.payment_method }} (Simulator Mode)</div>
+            <div class="mb-0"><strong>Status:</strong> <span class="badge bg-success">Paid</span></div>
+        </div>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('shop.catalog') }}" class="btn btn-luxury">Browse Shop</a>
+            <a href="{{ url_for('shop.orders_list') }}" class="btn btn-outline-luxury">Track Orders</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

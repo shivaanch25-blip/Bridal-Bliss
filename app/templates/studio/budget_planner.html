@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Wedding Budget Planner - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <div class="text-center mb-5">
+        <h2 class="text-rose" style="color: var(--primary-color);"><i class="bi bi-wallet2 me-2"></i>AI Wedding Budget Planner</h2>
+        <p class="text-muted">Specify your total wedding styling budget, and let our allocator distribute costs and recommend matching catalog items.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Budget Form & Allocations -->
+        <div class="col-lg-5">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-center"><i class="bi bi-sliders me-2"></i>Calibrate Budget</h4>
+                
+                <form action="{{ url_for('studio.budget_planner') }}" method="POST" class="mb-4">
+                    <div class="mb-3">
+                        <label for="total_budget" class="form-label fw-semibold small">Total Styling Budget (₹)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white">₹</span>
+                            <input type="number" name="total_budget" id="total_budget" class="form-control" 
+                                   value="{{ plan.total_budget if plan else 150000.0 }}" min="10000" step="5000" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-luxury w-100">Recalculate Allocations</button>
+                </form>
+
+                {% if plan %}
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Allocations breakdown:</h5>
+                <div class="d-flex flex-column gap-3">
+                    
+                    <!-- Dress -->
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold">
+                            <span>👗 Outfits & Dresses (40%)</span>
+                            <span class="text-rose">{{ plan.dress_budget | currency }}</span>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill" style="width: 40%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Jewelry -->
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold">
+                            <span>💎 Jewelry Set (30%)</span>
+                            <span class="text-rose">{{ plan.jewelry_budget | currency }}</span>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill" style="width: 30%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Makeup -->
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold">
+                            <span>💄 Makeup & Salons (15%)</span>
+                            <span class="text-rose">{{ plan.makeup_budget | currency }}</span>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill" style="width: 15%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Accessories -->
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold">
+                            <span>👠 Accessories (7.5%)</span>
+                            <span class="text-rose">{{ plan.accessories_budget | currency }}</span>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill" style="width: 7.5%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency -->
+                    <div>
+                        <div class="d-flex justify-content-between small fw-bold">
+                            <span>🚨 Emergency Buffer (7.5%)</span>
+                            <span class="text-rose">{{ plan.emergency_budget | currency }}</span>
+                        </div>
+                        <div class="budget-bar">
+                            <div class="budget-fill" style="width: 7.5%;"></div>
+                        </div>
+                    </div>
+
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Matches within Budget ceilings -->
+        <div class="col-lg-7">
+            <div class="glass-panel p-4 shadow-sm border border-light">
+                <h4 class="mb-4 text-center"><i class="bi bi-stars text-warning me-2 animate-pulse"></i>Catalog Recommendations Under Budget Limit</h4>
+                
+                {% if not plan %}
+                    <p class="text-muted text-center py-5">Please set a total budget in the allocator to view matching outfits.</p>
+                {% else %}
+                    
+                    <!-- Suggested Outfits -->
+                    <div class="mb-4 pb-3 border-bottom">
+                        <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-heart-fill me-2 small"></i>Dresses Cap: {{ plan.dress_budget | currency }}</h5>
+                        {% if not dresses %}
+                            <p class="small text-muted ps-2">No outfits in catalog currently under this price limit.</p>
+                        {% else %}
+                            <div class="row g-3">
+                                {% for d in dresses %}
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded border border-light d-flex justify-content-between align-items-center">
+                                        <div class="text-truncate" style="max-width: 180px;">
+                                            <span class="fw-bold small d-block text-truncate">{{ d.name }}</span>
+                                            <span class="text-rose small fw-semibold">{{ d.price | currency }}</span>
+                                        </div>
+                                        <a href="{{ url_for('shop.product_detail', product_id=d.id) }}" class="btn btn-luxury btn-sm px-2 py-1" style="font-size: 0.75rem;">View</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Suggested Jewelry -->
+                    <div class="mb-4 pb-3 border-bottom">
+                        <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-heart-fill me-2 small"></i>Jewelry Cap: {{ plan.jewelry_budget | currency }}</h5>
+                        {% if not jewelry %}
+                            <p class="small text-muted ps-2">No jewelry items currently under this price limit.</p>
+                        {% else %}
+                            <div class="row g-3">
+                                {% for j in jewelry %}
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded border border-light d-flex justify-content-between align-items-center">
+                                        <div class="text-truncate" style="max-width: 180px;">
+                                            <span class="fw-bold small d-block text-truncate">{{ j.name }}</span>
+                                            <span class="text-rose small fw-semibold">{{ j.price | currency }}</span>
+                                        </div>
+                                        <a href="{{ url_for('shop.product_detail', product_id=j.id) }}" class="btn btn-luxury btn-sm px-2 py-1" style="font-size: 0.75rem;">View</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Suggested Accessories -->
+                    <div>
+                        <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-heart-fill me-2 small"></i>Accessories Cap: {{ plan.accessories_budget | currency }}</h5>
+                        {% if not accessories %}
+                            <p class="small text-muted ps-2">No accessories currently under this price limit.</p>
+                        {% else %}
+                            <div class="row g-3">
+                                {% for a in accessories %}
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded border border-light d-flex justify-content-between align-items-center">
+                                        <div class="text-truncate" style="max-width: 180px;">
+                                            <span class="fw-bold small d-block text-truncate">{{ a.name }}</span>
+                                            <span class="text-rose small fw-semibold">{{ a.price | currency }}</span>
+                                        </div>
+                                        <a href="{{ url_for('shop.product_detail', product_id=a.id) }}" class="btn btn-luxury btn-sm px-2 py-1" style="font-size: 0.75rem;">View</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

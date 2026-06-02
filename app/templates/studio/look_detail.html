@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}{{ look.name }} - AI Look Studio{% endblock %}
+
+{% block content %}
+<div class="container py-5 animate__animated animate__fadeIn">
+    <!-- Look Metadata Panel -->
+    <div class="glass-panel p-5 mb-5 shadow-sm border border-light">
+        <div class="row g-5">
+            <div class="col-md-5 text-center">
+                <img src="{{ look.image_url }}" alt="{{ look.name }}" class="img-fluid rounded shadow border border-light" style="max-height: 480px; width: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=600&q=80'">
+            </div>
+            
+            <div class="col-md-7 d-flex flex-column text-start">
+                <h2 class="mb-3">{{ look.name }}</h2>
+                <p class="lead text-secondary mb-4">{{ look.description }}</p>
+                
+                <div class="p-4 bg-light rounded border border-light mb-4">
+                    <h5 class="fw-bold mb-3 text-rose"><i class="bi bi-stars me-2"></i>Styling Specifications:</h5>
+                    <div class="row g-3 small">
+                        <div class="col-md-6"><strong>💄 Makeup Style:</strong> {{ look.makeup_style }}</div>
+                        <div class="col-md-6"><strong>💇 Hairstyle:</strong> {{ look.hairstyle }}</div>
+                        <div class="col-md-6"><strong>💎 Jewelry:</strong> {{ look.jewelry_style }}</div>
+                        <div class="col-md-6"><strong>👗 Outfit Suggestion:</strong> {{ look.outfit_style }}</div>
+                        <div class="col-md-12"><strong>🎨 Color Palette:</strong> {{ look.color_palette }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hybrid Products Matches -->
+    <div class="mb-5">
+        <h3 class="mb-4 text-center"><i class="bi bi-gift-fill text-rose me-2"></i>Matching Outfit & Jewelry Picks</h3>
+        <div class="row g-4">
+            {% for p in products %}
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'">
+                    </div>
+                    <div class="card-body-luxury">
+                        <h5 class="fw-bold text-truncate mb-1">{{ p.name }}</h5>
+                        <p class="small text-rose fw-semibold mb-3">{{ p.price | currency }}</p>
+                        <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="btn btn-outline-luxury btn-sm w-100">Shop Item</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Salon Recommendations -->
+    <div class="mb-5">
+        <h3 class="mb-4 text-center"><i class="bi bi-shop text-rose me-2"></i>Highly Recommended Salons for this Look</h3>
+        <div class="row g-4">
+            {% for salon, dist in salons %}
+            <div class="col-md-4">
+                <div class="glass-panel p-4 shadow-sm border border-light d-flex flex-column h-100">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-light text-rose border border-rose"><i class="bi bi-star-fill text-warning me-1"></i>{{ salon.rating }}</span>
+                        <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ dist | round(1) }} km away</span>
+                    </div>
+                    <h4 class="mb-2">{{ salon.name }}</h4>
+                    <p class="small text-muted mb-3">{{ salon.address }}, {{ salon.city }}</p>
+                    <p class="small text-secondary mb-4">{{ salon.description[:100] }}...</p>
+                    <a href="{{ url_for('main.salon_detail', salon_id=salon.id) }}" class="btn btn-luxury btn-sm mt-auto w-100"><i class="bi bi-calendar-check me-2"></i>Book Makeover Session</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Reviews block -->
+    <div class="glass-panel p-5 shadow-sm border border-light">
+        <h3 class="mb-4">Look Reviews</h3>
+        
+        <!-- Add review form -->
+        {% if current_user.is_authenticated and current_user.role == 'bride' %}
+        <form action="{{ url_for('studio.add_look_review', look_id=look.id) }}" method="POST" class="mb-5 pb-4 border-bottom">
+            <h5 class="fw-bold mb-3">Rate This Bridal Look</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="small fw-semibold mb-1">Rating</label>
+                    <select name="rating" class="form-select">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 Star)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 Star)</option>
+                        <option value="3">⭐⭐⭐ (3 Star)</option>
+                        <option value="2">⭐⭐ (2 Star)</option>
+                        <option value="1">⭐ (1 Star)</option>
+                    </select>
+                </div>
+                <div class="col-md-9">
+                    <label class="small fw-semibold mb-1">Comment</label>
+                    <textarea name="comment" class="form-control" rows="2" placeholder="Tell other brides how this look fits your style..." required></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-luxury btn-sm mt-3">Submit Look Review</button>
+        </form>
+        {% endif %}
+
+        <!-- Reviews list -->
+        {% if not reviews %}
+            <p class="text-muted text-center py-4">No reviews yet for this bridal look. Be the first to add feedback!</p>
+        {% else %}
+            <div class="d-flex flex-column gap-4">
+                {% for r in reviews %}
+                <div class="p-3 bg-light rounded border border-light">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small"><i class="bi bi-person-fill text-rose me-1"></i>{{ r.user.username }}</span>
+                        <span class="stars-display small">
+                            {% for i in range(r.rating) %}⭐{% endfor %}
+                        </span>
+                    </div>
+                    <p class="card-text small text-secondary m-0">"{{ r.comment }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

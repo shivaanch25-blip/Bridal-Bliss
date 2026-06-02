@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="glass-panel p-5 shadow border border-light animate__animated animate__fadeIn">
+                <div class="text-center mb-4">
+                    <i class="bi bi-balloon-heart-fill fs-1" style="color: var(--primary-color);"></i>
+                    <h2 class="mt-2">Welcome Back</h2>
+                    <p class="text-muted small">Sign in to manage shopping cart, budget plan, and styling bookings</p>
+                </div>
+                <form action="{{ url_for('auth.login') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold small">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0" id="username" placeholder="Enter username" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold small">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0" id="password" placeholder="Enter password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-luxury w-100 mb-3">Login to Bliss</button>
+                </form>
+                <div class="text-center mt-3">
+                    <p class="small text-muted">New to Bridal Bliss? <a href="{{ url_for('auth.register') }}" class="text-decoration-none fw-bold" style="color: var(--primary-color);">Create account</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

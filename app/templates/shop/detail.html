@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Product detail card -->
+    <div class="glass-panel p-5 mb-5 shadow-sm border border-light animate__animated animate__fadeIn">
+        <div class="row g-5">
+            <div class="col-md-6 text-center">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="img-fluid rounded shadow border border-light" style="max-height: 480px; width: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80'">
+            </div>
+            
+            <div class="col-md-6 d-flex flex-column">
+                <div class="mb-3">
+                    <span class="badge bg-light text-rose border border-rose text-uppercase px-3 py-2 fw-semibold">{{ product.budget_tier }} Bracket</span>
+                </div>
+                
+                <h2 class="mb-2">{{ product.name }}</h2>
+                <p class="text-muted small mb-4"><i class="bi bi-tag-fill me-1"></i>Tags: {{ product.style_tags }}</p>
+                
+                <h3 class="text-rose fw-bold mb-4 fs-2" style="color: var(--primary-color);">{{ product.price | currency }}</h3>
+                
+                <h5 class="fw-bold mb-2">Description</h5>
+                <p class="text-secondary mb-4">{{ product.description }}</p>
+                
+                <!-- Add to cart -->
+                <form action="{{ url_for('shop.cart_view') }}" method="POST" class="mt-auto">
+                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <div class="row g-3 align-items-center mb-4">
+                        <div class="col-auto">
+                            <label for="quantity" class="fw-semibold small">Quantity:</label>
+                        </div>
+                        <div class="col-3">
+                            <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1" max="10">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-luxury"><i class="bi bi-bag-plus me-2"></i>Add to Cart</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI recommendations -->
+    {% if recommendations %}
+    <div class="mb-5">
+        <h3 class="mb-4 text-center"><i class="bi bi-stars text-warning me-2"></i>AI Hybrid Styling Matches</h3>
+        <div class="row g-4">
+            {% for r in recommendations %}
+            <div class="col-md-3">
+                <div class="card-luxury">
+                    <div class="card-img-wrap">
+                        <img src="{{ r.image_url }}" alt="{{ r.name }}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=400&q=80'">
+                    </div>
+                    <div class="card-body-luxury">
+                        <h5 class="fw-bold text-truncate mb-1">{{ r.name }}</h5>
+                        <p class="small text-rose fw-semibold mb-3">{{ r.price | currency }}</p>
+                        <a href="{{ url_for('shop.product_detail', product_id=r.id) }}" class="btn btn-outline-luxury btn-sm w-100">View Match</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Reviews section -->
+    <div class="glass-panel p-5 shadow-sm border border-light">
+        <h3 class="mb-4">Product Reviews</h3>
+        
+        <!-- Add review form -->
+        {% if current_user.is_authenticated and current_user.role == 'bride' %}
+        <form action="{{ url_for('shop.add_product_review', product_id=product.id) }}" method="POST" class="mb-5 pb-4 border-bottom">
+            <h5 class="fw-bold mb-3">Add Your Rating</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="small fw-semibold mb-1">Rating</label>
+                    <select name="rating" class="form-select">
+                        <option value="5">⭐⭐⭐⭐⭐ (5 Star)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 Star)</option>
+                        <option value="3">⭐⭐⭐ (3 Star)</option>
+                        <option value="2">⭐⭐ (2 Star)</option>
+                        <option value="1">⭐ (1 Star)</option>
+                    </select>
+                </div>
+                <div class="col-md-9">
+                    <label class="small fw-semibold mb-1">Comment</label>
+                    <textarea name="comment" class="form-control" rows="2" placeholder="Tell us how you liked it..." required></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-luxury btn-sm mt-3">Submit Review</button>
+        </form>
+        {% endif %}
+
+        <!-- Reviews List -->
+        {% if not product.reviews %}
+            <p class="text-muted text-center py-4">No reviews yet. Be the first to share your experience!</p>
+        {% else %}
+            <div class="d-flex flex-column gap-4">
+                {% for r in product.reviews %}
+                <div class="p-3 bg-light rounded border border-light">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small"><i class="bi bi-person-fill text-rose me-1"></i>{{ r.user.username }}</span>
+                        <span class="stars-display small">
+                            {% for i in range(r.rating) %}⭐{% endfor %}
+                        </span>
+                    </div>
+                    <p class="card-text small text-secondary m-0">"{{ r.comment }}"</p>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

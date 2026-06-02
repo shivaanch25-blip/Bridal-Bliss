@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-5 py-5 animate__animated animate__fadeIn">
+    <div class="text-center mb-5">
+        <h2>Global Administrative Control</h2>
+        <p class="text-muted">Analyze marketplace orders, approve beauty studios, and manage shopping items & looks</p>
+    </div>
+
+    <!-- Analytics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Total Sales (Paid Orders)</span>
+                <span class="fs-2 fw-bold text-success">{{ sales | currency }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Order Count</span>
+                <span class="fs-2 fw-bold text-primary">{{ order_count }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Registered Brides</span>
+                <span class="fs-2 fw-bold text-rose" style="color: var(--primary-color);">{{ brides }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-panel p-4 text-center border border-light">
+                <span class="small fw-bold text-muted text-uppercase d-block mb-1">Registered Owners</span>
+                <span class="fs-2 fw-bold text-dark">{{ owners }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <div class="glass-panel p-4 shadow-sm border border-light mb-5">
+        <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active text-dark" id="salons-tab" data-bs-toggle="tab" data-bs-target="#salons" type="button">Salon Approvals</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-dark" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button">Manage Products</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link text-dark" id="looks-tab" data-bs-toggle="tab" data-bs-target="#looks" type="button">Manage Bridal Looks</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            
+            <!-- Salon Approvals Tab -->
+            <div class="tab-pane fade show active" id="salons" role="tabpanel">
+                <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);">Pending Salon Approvals</h4>
+                {% if not pending_salons %}
+                    <p class="text-muted text-center py-4">No salons currently awaiting approval.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Salon Name</th>
+                                    <th>City & Address</th>
+                                    <th>Pincode</th>
+                                    <th>Coordinates</th>
+                                    <th>Exp</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in pending_salons %}
+                                <tr>
+                                    <td><strong>{{ s.name }}</strong><br><span class="text-muted small">{{ s.contact_number }}</span></td>
+                                    <td>{{ s.address }}, {{ s.city }}</td>
+                                    <td>{{ s.pincode }}</td>
+                                    <td>Lat: {{ s.latitude | round(4) }}, Lon: {{ s.longitude | round(4) }}</td>
+                                    <td>{{ s.experience_years }} years</td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin.approve_salon', salon_id=s.id) }}" class="btn btn-success btn-sm me-1 px-3">Approve</a>
+                                        <a href="{{ url_for('admin.delete_salon', salon_id=s.id) }}" class="btn btn-outline-danger btn-sm px-3">Decline</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                <h4 class="mb-4 mt-5 text-dark fw-bold">Approved Activated Salons</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small text-muted">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Salon Name</th>
+                                <th>City</th>
+                                <th>Coordinates</th>
+                                <th>Rating</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in approved_salons %}
+                            <tr>
+                                <td><strong>{{ s.name }}</strong></td>
+                                <td>{{ s.city }}</td>
+                                <td>{{ s.latitude | round(3) }}, {{ s.longitude | round(3) }}</td>
+                                <td>⭐{{ s.rating }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('admin.delete_salon', salon_id=s.id) }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Manage Products Tab -->
+            <div class="tab-pane fade" id="products" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Add Product Form -->
+                    <div class="col-lg-4 border-end">
+                        <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);">Add Product Item</h4>
+                        <form action="{{ url_for('admin.add_product') }}" method="POST">
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Product Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Traditional Zardosi Lehenga" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Description</label>
+                                <textarea name="description" class="form-control" rows="2" placeholder="Item description" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Price (₹)</label>
+                                <input type="number" name="price" class="form-control" placeholder="e.g. 50000" min="0" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Category</label>
+                                <select name="category_id" class="form-select">
+                                    {% for cat in categories %}
+                                        {% if cat.parent_id %}
+                                            <option value="{{ cat.id }}">{{ cat.parent.name }} - {{ cat.name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Budget Tier</label>
+                                <select name="budget_tier" class="form-select">
+                                    <option value="budget">Budget Bracket</option>
+                                    <option value="midrange" selected>Midrange Bracket</option>
+                                    <option value="luxury">Luxury Bracket</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Style Tags (comma separated)</label>
+                                <input type="text" name="style_tags" class="form-control" placeholder="e.g. traditional, gold, heavy">
+                            </div>
+                            <div class="mb-4">
+                                <label class="small fw-semibold mb-1">Image URL Path</label>
+                                <input type="text" name="image_url" class="form-control" value="/static/images/products/default.jpg">
+                            </div>
+                            <button type="submit" class="btn btn-luxury w-100">Add Item</button>
+                        </form>
+                    </div>
+
+                    <!-- Products Catalog list -->
+                    <div class="col-lg-8">
+                        <h4 class="mb-4 text-dark fw-bold">Active Shopping Catalog</h4>
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-hover align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Tier</th>
+                                        <th>Price</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in products %}
+                                    <tr>
+                                        <td><strong>{{ p.name }}</strong></td>
+                                        <td>{{ p.category.name if p.category else 'Default' }}</td>
+                                        <td><span class="badge bg-light text-rose border border-rose text-capitalize">{{ p.budget_tier }}</span></td>
+                                        <td class="fw-bold text-rose">{{ p.price | currency }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ url_for('admin.delete_product', product_id=p.id) }}" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Bridal Looks Tab -->
+            <div class="tab-pane fade" id="looks" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Add Look Form -->
+                    <div class="col-lg-4 border-end">
+                        <h4 class="mb-4 text-rose fw-bold" style="color: var(--primary-color);">Create AI Bridal Look</h4>
+                        <form action="{{ url_for('admin.add_look') }}" method="POST">
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Look Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="e.g. Royal Rajput Bride" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="small fw-semibold mb-1">Makeup Style specs</label>
+                                <input type="text" name="makeup_style" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="small fw-semibold mb-1">Hairstyling specs</label>
+                                <input type="text" name="hairstyle" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="small fw-semibold mb-1">Jewelry specs</label>
+                                <input type="text" name="jewelry_style" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="small fw-semibold mb-1">Outfit details</label>
+                                <input type="text" name="outfit_style" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Color Palette (comma separated)</label>
+                                <input type="text" name="color_palette" class="form-control" placeholder="e.g. Crimson, Gold, Emerald" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Aesthetic Description</label>
+                                <textarea name="description" class="form-control" rows="2" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="small fw-semibold mb-1">Style Tags</label>
+                                <input type="text" name="theme_tags" class="form-control" placeholder="e.g. traditional, gold, heavy" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="small fw-semibold mb-1">Image URL Path</label>
+                                <input type="text" name="image_url" class="form-control" value="/static/images/looks/default.jpg">
+                            </div>
+                            <button type="submit" class="btn btn-luxury w-100">Create Preset Look</button>
+                        </form>
+                    </div>
+
+                    <!-- Looks Catalog list -->
+                    <div class="col-lg-8">
+                        <h4 class="mb-4 text-dark fw-bold">Active Preset Looks</h4>
+                        <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                            <table class="table table-hover align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Preset Name</th>
+                                        <th>Makeup Specification</th>
+                                        <th>Color Palette</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for l in looks %}
+                                    <tr>
+                                        <td><strong>{{ l.name }}</strong></td>
+                                        <td>{{ l.makeup_style }}</td>
+                                        <td>{{ l.color_palette }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ url_for('admin.delete_look', look_id=l.id) }}" class="btn btn-outline-danger btn-sm rounded-circle"><i class="bi bi-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

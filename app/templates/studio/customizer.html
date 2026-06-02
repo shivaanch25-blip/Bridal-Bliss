@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}AI Bridal Customizer - Bridal Bliss{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="glass-panel p-5 shadow border border-light animate__animated animate__fadeIn">
+                <div class="text-center mb-5">
+                    <h2 class="text-rose" style="color: var(--primary-color);"><i class="bi bi-magic me-2 text-warning animate-pulse"></i>AI Styling Customizer</h2>
+                    <p class="text-muted">Answer a few quick questions to align our hybrid recommendation engine with your dream aesthetic</p>
+                    
+                    <!-- Progress indicators -->
+                    <div class="d-flex justify-content-center gap-4 mt-4 text-uppercase small fw-bold">
+                        <span id="indicator1" class="text-rose pb-1 border-bottom border-rose border-2">1. Photo & Skin</span>
+                        <span id="indicator2" class="text-muted">2. Styling Shape</span>
+                        <span id="indicator3" class="text-muted">3. Theme & Budget</span>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('studio.customizer') }}" method="POST" id="customizerForm" enctype="multipart/form-data">
+                    
+                    <!-- STEP 1 -->
+                    <div class="step-pane active" id="step1">
+                        <h4 class="mb-4 text-center"><i class="bi bi-camera-fill me-2 text-rose"></i>Diagnostic Upload</h4>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Upload Portrait Selfie (Simulated AI Face Scanner)</label>
+                            <input type="file" name="face_image" class="form-control mb-2">
+                            <div class="form-text small text-muted">A clear portrait photo helps our hybrid algorithms scan facial geometry and recommend matching necklines or makeup palettes.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Select Skin Tone Category</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="skin_tone" id="skinFair" value="Fair" checked>
+                                    <label class="btn btn-outline-secondary w-100 py-3" for="skinFair">Fair (Ivory)</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="skin_tone" id="skinMedium" value="Medium">
+                                    <label class="btn btn-outline-secondary w-100 py-3" for="skinMedium">Medium (Warm Gold)</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="skin_tone" id="skinDusk" value="Dusk">
+                                    <label class="btn btn-outline-secondary w-100 py-3" for="skinDusk">Dusk (Crimson)</label>
+                                </div>
+                                <div class="col-6">
+                                    <input type="radio" class="btn-check" name="skin_tone" id="skinDeep" value="Deep">
+                                    <label class="btn btn-outline-secondary w-100 py-3" for="skinDeep">Deep (Royal Bronze)</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-luxury" onclick="nextStep(2)">Next: Shapes <i class="bi bi-arrow-right-short ms-1"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2 -->
+                    <div class="step-pane" id="step2">
+                        <h4 class="mb-4 text-center"><i class="bi bi-scissors me-2 text-rose"></i>Styling Geometry</h4>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Face Shape</label>
+                            <select name="face_shape" class="form-select mb-3">
+                                <option value="Oval">Oval (Suits most necklines & buns)</option>
+                                <option value="Round">Round (Soft loose braids / side sweeps)</option>
+                                <option value="Heart">Heart (Open hairstyles / sleek chokers)</option>
+                                <option value="Square">Square (Regal heavy borla / drops)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Hair Length</label>
+                            <select name="hair_length" class="form-select">
+                                <option value="Short">Short (Elegant modern reception looks)</option>
+                                <option value="Medium">Medium (Classic styles with extensions)</option>
+                                <option value="Long">Long (Traditional heavy flower braid Jada)</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="prevStep(1)"><i class="bi bi-arrow-left-short me-1"></i> Back</button>
+                            <button type="button" class="btn btn-luxury" onclick="nextStep(3)">Next: Theme & Budget <i class="bi bi-arrow-right-short ms-1"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3 -->
+                    <div class="step-pane" id="step3">
+                        <h4 class="mb-4 text-center"><i class="bi bi-sliders me-2 text-rose"></i>Theme & Budgeting</h4>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Wedding Theme Preference</label>
+                            <select name="wedding_theme" class="form-select">
+                                <option value="Traditional Gujarati">Traditional Gujarati (Panetar draping)</option>
+                                <option value="Royal Rajput">Royal Rajput (Regal Aad / Borla poshak)</option>
+                                <option value="South Indian">South Indian (Mustard-Red Kanjeevaram Saree)</option>
+                                <option value="Bengali">Bengali (Winged eye makeup / Mukut crown)</option>
+                                <option value="Minimalist">Minimalist (Pastel tones / Light Diamond style)</option>
+                                <option value="Modern Luxury">Modern Luxury (Contemporary Sequin Gown)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Preferred Jewelry Medium</label>
+                            <select name="jewelry_style" class="form-select">
+                                <option value="Kundan">Kundan / Polki work</option>
+                                <option value="Temple">Traditional Temple Gold jewelry</option>
+                                <option value="Diamond">Premium Diamond / Platinum styles</option>
+                                <option value="Antique Gold">Antique Yellow Gold settings</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Aesthetic Color Palette (comma separated)</label>
+                            <input type="text" name="preferred_colors" class="form-control" placeholder="e.g. Peach, Emerald Green, Pink, Ivory">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Styling Budget Ceiling (₹)</label>
+                            <input type="number" name="budget" class="form-control" placeholder="e.g. 250000" value="150000" min="5000">
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="prevStep(2)"><i class="bi bi-arrow-left-short me-1"></i> Back</button>
+                            <button type="submit" class="btn btn-luxury"><i class="bi bi-magic me-2"></i>Calibrate Custom Look</button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function nextStep(stepNum) {
+    // Hide all step panes
+    document.querySelectorAll('.step-pane').forEach(el => el.classList.remove('active'));
+    // Show target step pane
+    document.getElementById('step' + stepNum).classList.add('active');
+    
+    // Update indicators
+    for (let i = 1; i <= 3; i++) {
+        const ind = document.getElementById('indicator' + i);
+        if(i === stepNum) {
+            ind.className = 'text-rose pb-1 border-bottom border-rose border-2';
+        } else if(i < stepNum) {
+            ind.className = 'text-success fw-bold';
+            ind.innerHTML = '✓ Step ' + i;
+        } else {
+            ind.className = 'text-muted';
+        }
+    }
+}
+
+function prevStep(stepNum) {
+    document.querySelectorAll('.step-pane').forEach(el => el.classList.remove('active'));
+    document.getElementById('step' + stepNum).classList.add('active');
+    
+    // Reset indicators
+    for (let i = 1; i <= 3; i++) {
+        const ind = document.getElementById('indicator' + i);
+        if(i === stepNum) {
+            ind.className = 'text-rose pb-1 border-bottom border-rose border-2';
+            ind.innerHTML = i + '. ' + (i === 1 ? 'Photo & Skin' : i === 2 ? 'Styling Shape' : 'Theme & Budget');
+        } else if(i < stepNum) {
+            ind.className = 'text-success fw-bold';
+            ind.innerHTML = '✓ Step ' + i;
+        } else {
+            ind.className = 'text-muted';
+            ind.innerHTML = i + '. ' + (i === 1 ? 'Photo & Skin' : i === 2 ? 'Styling Shape' : 'Theme & Budget');
+        }
+    }
+}
+</script>
+{% endblock %}
