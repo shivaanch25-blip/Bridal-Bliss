@@ -85,6 +85,8 @@ gunicorn run:app --log-file -
 - Set start command: `gunicorn run:app --log-file -`
 - Configure `SECRET_KEY`, `DATABASE_URL`, `FLASK_ENV=production`, and `PORT`
 
+Live URL = `(https://bridal-bliss.onrender.com/)`
+
 ## Testing
 
 Execute the automated test suite:
