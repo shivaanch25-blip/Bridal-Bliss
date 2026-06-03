@@ -1,0 +1,28 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# SQLite database
+*.db
+*.sqlite3
+
+# Flask uploads and instance folder
+app/static/uploads/
+instance/
+
+# Environment files
+.env
+.env.*
+
+# Pytest cache
+.pytest_cache/
+
+# Editor directories
+.vscode/
+.idea/

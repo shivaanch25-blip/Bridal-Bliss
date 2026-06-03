@@ -1,16 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from app.utils.auth_helpers import admin_required
+from app.utils.audit import log_event
 from app.models import db, Salon, Product, Category, BridalLook, User, Order
 
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/dashboard')
-@login_required
+@admin_required
 def dashboard():
-    if current_user.role != 'admin':
-        flash('Only administrators can access this page.', 'danger')
-        return redirect(url_for('main.index'))
-
     # Gather Global Analytics
     orders = Order.query.all()
     total_sales = sum([o.total_amount for o in orders if o.status == 'Paid'])
@@ -41,42 +38,32 @@ def dashboard():
 
 
 @admin_bp.route('/salon/<int:salon_id>/approve')
-@login_required
+@admin_required
 def approve_salon(salon_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
-
     salon = Salon.query.get_or_404(salon_id)
     salon.is_approved = True
     db.session.commit()
+    log_event(current_user.id, 'update', 'salon', salon.id, f'Salon approved: {salon.name}')
 
     flash(f'Salon "{salon.name}" has been approved!', 'success')
     return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/salon/<int:salon_id>/delete')
-@login_required
+@admin_required
 def delete_salon(salon_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
-
     salon = Salon.query.get_or_404(salon_id)
     db.session.delete(salon)
     db.session.commit()
+    log_event(current_user.id, 'delete', 'salon', salon.id, f'Salon deleted: {salon.name}')
 
     flash('Salon record deleted.', 'info')
     return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/product/add', methods=['POST'])
-@login_required
+@admin_required
 def add_product():
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
-
     name = request.form.get('name')
     desc = request.form.get('description')
     price = request.form.get('price', 0)
@@ -101,32 +88,27 @@ def add_product():
     )
     db.session.add(new_prod)
     db.session.commit()
+    log_event(current_user.id, 'create', 'product', new_prod.id, f'Product created: {new_prod.name}')
 
     flash('New product added to catalog.', 'success')
     return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/product/<int:product_id>/delete')
-@login_required
+@admin_required
 def delete_product(product_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
-
     product = Product.query.get_or_404(product_id)
     db.session.delete(product)
     db.session.commit()
+    log_event(current_user.id, 'delete', 'product', product.id, f'Product deleted: {product.name}')
 
     flash('Product removed from catalog.', 'info')
     return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/look/add', methods=['POST'])
-@login_required
+@admin_required
 def add_look():
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
 
     name = request.form.get('name')
     makeup = request.form.get('makeup_style')
@@ -151,21 +133,19 @@ def add_look():
     )
     db.session.add(new_look)
     db.session.commit()
+    log_event(current_user.id, 'create', 'bridal_look', new_look.id, f'Look created: {new_look.name}')
 
     flash('New AI Bridal Look created.', 'success')
     return redirect(url_for('admin.dashboard'))
 
 
 @admin_bp.route('/look/<int:look_id>/delete')
-@login_required
+@admin_required
 def delete_look(look_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized.', 'danger')
-        return redirect(url_for('main.index'))
-
     look = BridalLook.query.get_or_404(look_id)
     db.session.delete(look)
     db.session.commit()
+    log_event(current_user.id, 'delete', 'bridal_look', look.id, f'Look deleted: {look.name}')
 
     flash('Bridal look deleted.', 'info')
     return redirect(url_for('admin.dashboard'))

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from app.models import db, BridalLook, LookReview, UserPreference, BudgetPlan, Product, Category
-from app.utils.ai_engine import get_hybrid_product_recommendations, get_recommended_salons, format_budget_plan
+from app.services.recommendation_service import RecommendationService
+from app.utils.ai_engine import format_budget_plan
 
 studio_bp = Blueprint('studio', __name__)
 
@@ -18,10 +19,10 @@ def look_detail(look_id):
     
     # AI recommendations based on look
     pref = current_user.preference if current_user.is_authenticated else None
-    recommended_products = get_hybrid_product_recommendations(user_pref=pref, look=look, limit=4)
+    recommended_products = RecommendationService.get_products(user_pref=pref, look=look, limit=4)
     
     # Recommend top 3 salons (default coordinates: Vadodara)
-    recommended_salons = get_recommended_salons(22.3072, 73.1812, look=look, limit=3)
+    recommended_salons = RecommendationService.get_salons(22.3072, 73.1812, look=look, limit=3)
     
     wishlisted = False
     if current_user.is_authenticated and current_user.wishlist:
@@ -110,10 +111,10 @@ def customizer():
                 self.preferred_colors = pref_colors
 
         temp_pref = TempPref()
-        recommended_products = get_hybrid_product_recommendations(user_pref=temp_pref, limit=6)
+        recommended_products = RecommendationService.get_products(user_pref=temp_pref, limit=6)
         
         # Match with default coordinates (Vadodara)
-        recommended_salons = get_recommended_salons(22.3072, 73.1812, limit=3)
+        recommended_salons = RecommendationService.get_salons(22.3072, 73.1812, limit=3)
 
         # Highlight preset look that matches best
         matched_look = BridalLook.query.filter(BridalLook.theme_tags.like(f"%{skin_tone.lower()}%") | BridalLook.theme_tags.like(f"%{jewelry_style.lower()}%")).first()

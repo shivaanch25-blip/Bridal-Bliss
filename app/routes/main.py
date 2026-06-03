@@ -110,7 +110,7 @@ def salons_list():
 
 @main_bp.route('/salons/<int:salon_id>')
 def salon_detail(salon_id):
-    salon = Salon.query.get_or_4_valid = Salon.query.get_or_404(salon_id)
+    salon = Salon.query.get_or_404(salon_id)
     # Available bridal looks to choose for booking
     looks = BridalLook.query.all()
     return render_template('salons/detail.html', salon=salon, looks=looks)

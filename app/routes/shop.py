@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for, flash, jsonify
+from app.utils.auth_helpers import bride_required
+from app.utils.audit import log_event
 from flask_login import login_required, current_user
 from app.models import db, Product, Category, Wishlist, WishlistItem, Order, OrderItem, Review
 from app.utils.ai_engine import get_hybrid_product_recommendations
-from app.utils.notification_service import notify_order_status
+from app.services.notification_service import NotificationService
 
 shop_bp = Blueprint('shop', __name__)
 
@@ -177,11 +179,8 @@ def cart_view():
 
 
 @shop_bp.route('/checkout')
-@login_required
+@bride_required
 def checkout():
-    if current_user.role != 'bride':
-        flash('Only brides can perform orders.', 'warning')
-        return redirect(url_for('shop.catalog'))
 
     cart = session.get('cart', {})
     if not cart:
@@ -203,7 +202,7 @@ def checkout():
 
 
 @shop_bp.route('/payment/simulate', methods=['POST'])
-@login_required
+@bride_required
 def simulate_payment():
     cart = session.get('cart', {})
     if not cart:
@@ -261,8 +260,9 @@ def simulate_payment():
         db.session.add(item)
     db.session.commit()
 
-    # Trigger mock email/SMS
-    notify_order_status(order)
+    log_event(current_user.id, 'create', 'order', order.id, f'Order created with {len(order_items_to_create)} items, total={order.total_amount}')
+
+    NotificationService.notify_order_status(order)
 
     # Clear cart
     session.pop('cart', None)

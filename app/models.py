@@ -168,16 +168,17 @@ class SalonService(db.Model):
 class Appointment(db.Model):
     __tablename__ = 'appointments'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=False)
-    look_id = db.Column(db.Integer, db.ForeignKey('bridal_looks.id'), nullable=True)
-    appointment_date = db.Column(db.String(64), nullable=False)  # YYYY-MM-DD
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=False, index=True)
+    look_id = db.Column(db.Integer, db.ForeignKey('bridal_looks.id'), nullable=True, index=True)
+    service = db.Column(db.String(128), default='Bridal Styling')
+    appointment_date = db.Column(db.String(64), nullable=False, index=True)  # YYYY-MM-DD
     time_slot = db.Column(db.String(64), nullable=False)  # e.g., '10:00 AM - 12:00 PM'
-    status = db.Column(db.String(32), default='Pending')  # 'Pending', 'Confirmed', 'Completed', 'Cancelled'
+    status = db.Column(db.String(32), default='Pending', index=True)  # 'Pending', 'Confirmed', 'Completed', 'Cancelled'
     home_service = db.Column(db.Boolean, default=False)
     total_price = db.Column(db.Float, nullable=False)
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     # Relationships
     user = db.relationship('User', back_populates='appointments')
@@ -198,10 +199,11 @@ class Wishlist(db.Model):
 class WishlistItem(db.Model):
     __tablename__ = 'wishlist_items'
     id = db.Column(db.Integer, primary_key=True)
-    wishlist_id = db.Column(db.Integer, db.ForeignKey('wishlists.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
-    look_id = db.Column(db.Integer, db.ForeignKey('bridal_looks.id'), nullable=True)
-    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=True)
+    wishlist_id = db.Column(db.Integer, db.ForeignKey('wishlists.id'), nullable=False, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True, index=True)
+    look_id = db.Column(db.Integer, db.ForeignKey('bridal_looks.id'), nullable=True, index=True)
+    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     # Relationships
     wishlist = db.relationship('Wishlist', back_populates='items')
@@ -271,12 +273,12 @@ class OrderItem(db.Model):
 class Review(db.Model):
     __tablename__ = 'reviews'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    salon_id = db.Column(db.Integer, db.ForeignKey('salons.id'), nullable=True, index=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True, index=True)
     rating = db.Column(db.Integer, default=5, nullable=False)
     comment = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     # Relationships
     user = db.relationship('User', back_populates='reviews')
@@ -287,11 +289,24 @@ class Review(db.Model):
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     message = db.Column(db.String(256), nullable=False)
-    is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     # Relationships
     user = db.relationship('User', back_populates='notifications')
+
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    action_type = db.Column(db.String(64), nullable=False, index=True)
+    entity_type = db.Column(db.String(64), nullable=False, index=True)
+    entity_id = db.Column(db.Integer, nullable=True, index=True)
+    details = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    user = db.relationship('User')
 

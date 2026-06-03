@@ -1,16 +1,15 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from app.utils.auth_helpers import owner_required
+from app.utils.audit import log_event
+from flask_login import current_user
 from app.models import db, Salon, SalonService, SalonPortfolio, Appointment
-from app.utils.notification_service import notify_booking_status
+from app.services.notification_service import NotificationService
 
 owner_bp = Blueprint('owner', __name__)
 
 @owner_bp.route('/dashboard')
-@login_required
+@owner_required
 def dashboard():
-    if current_user.role != 'salon_owner':
-        flash('Access restricted to salon owners.', 'warning')
-        return redirect(url_for('main.index'))
 
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
     
@@ -34,11 +33,8 @@ def dashboard():
 
 
 @owner_bp.route('/register-salon', methods=['POST'])
-@login_required
+@owner_required
 def register_salon():
-    if current_user.role != 'salon_owner':
-        flash('Access denied.', 'danger')
-        return redirect(url_for('main.index'))
 
     name = request.form.get('name')
     description = request.form.get('description')
@@ -71,17 +67,16 @@ def register_salon():
     )
     db.session.add(new_salon)
     db.session.commit()
+    log_event(current_user.id, 'create', 'salon', new_salon.id, f'Salon registered: {new_salon.name}')
 
     flash('Salon registered successfully! Waiting for administrator approval.', 'success')
     return redirect(url_for('owner.dashboard'))
 
 
 @owner_bp.route('/appointment/<int:booking_id>/status/<string:action>')
-@login_required
+@owner_required
 def update_appointment_status(booking_id, action):
     booking = Appointment.query.get_or_404(booking_id)
-    
-    # Verify owner owns this salon
     if booking.salon.owner_id != current_user.id:
         flash('Unauthorized action.', 'danger')
         return redirect(url_for('owner.dashboard'))
@@ -96,18 +91,15 @@ def update_appointment_status(booking_id, action):
         booking.status = 'Completed'
         flash('Appointment marked as Completed.', 'success')
 
-    # Trigger mock email/SMS and log notification inside database
-    notify_booking_status(booking)
+    NotificationService.notify_booking_status(booking)
     db.session.commit()
+    log_event(current_user.id, 'update', 'appointment', booking.id, f'Booking status updated to {booking.status}')
     return redirect(url_for('owner.dashboard'))
 
 
 @owner_bp.route('/services/manage', methods=['GET', 'POST'])
-@login_required
+@owner_required
 def manage_services():
-    if current_user.role != 'salon_owner':
-        flash('Access restricted.', 'warning')
-        return redirect(url_for('main.index'))
 
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
     if not salon:
@@ -131,6 +123,7 @@ def manage_services():
         )
         db.session.add(new_service)
         db.session.commit()
+        log_event(current_user.id, 'create', 'salon_service', new_service.id, f'Service added: {new_service.service_name}')
         flash('Service added successfully.', 'success')
         return redirect(url_for('owner.manage_services'))
 
@@ -139,7 +132,7 @@ def manage_services():
 
 
 @owner_bp.route('/services/<int:service_id>/delete')
-@login_required
+@owner_required
 def delete_service(service_id):
     service = SalonService.query.get_or_404(service_id)
     if service.salon.owner_id != current_user.id:
@@ -148,16 +141,14 @@ def delete_service(service_id):
 
     db.session.delete(service)
     db.session.commit()
+    log_event(current_user.id, 'delete', 'salon_service', service.id, f'Service deleted: {service.service_name}')
     flash('Service deleted successfully.', 'info')
     return redirect(url_for('owner.manage_services'))
 
 
 @owner_bp.route('/portfolio/manage', methods=['GET', 'POST'])
-@login_required
+@owner_required
 def manage_portfolio():
-    if current_user.role != 'salon_owner':
-        flash('Access restricted.', 'warning')
-        return redirect(url_for('main.index'))
 
     salon = Salon.query.filter_by(owner_id=current_user.id).first()
     if not salon:
@@ -176,6 +167,7 @@ def manage_portfolio():
         )
         db.session.add(new_item)
         db.session.commit()
+        log_event(current_user.id, 'create', 'salon_portfolio', new_item.id, 'Portfolio item added')
         flash('Transformation photo added to portfolio.', 'success')
         return redirect(url_for('owner.manage_portfolio'))
 
@@ -184,7 +176,7 @@ def manage_portfolio():
 
 
 @owner_bp.route('/portfolio/<int:portfolio_id>/delete')
-@login_required
+@owner_required
 def delete_portfolio(portfolio_id):
     item = SalonPortfolio.query.get_or_404(portfolio_id)
     if item.salon.owner_id != current_user.id:
@@ -193,5 +185,6 @@ def delete_portfolio(portfolio_id):
 
     db.session.delete(item)
     db.session.commit()
+    log_event(current_user.id, 'delete', 'salon_portfolio', item.id, 'Portfolio item deleted')
     flash('Portfolio item deleted.', 'info')
     return redirect(url_for('owner.manage_portfolio'))

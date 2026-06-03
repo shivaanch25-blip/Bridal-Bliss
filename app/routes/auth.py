@@ -2,8 +2,10 @@ import os
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
-from app.models import db, User, UserPreference, Wishlist, BudgetPlan
+from app.models import db, User, UserPreference, Wishlist, BudgetPlan, Notification
 from app.utils.ai_engine import format_budget_plan
+from app.utils.audit import log_event
+from app.utils.auth_helpers import bride_required
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -51,6 +53,7 @@ def register():
             db.session.add(budget)
             db.session.commit()
 
+        log_event(new_user.id, 'create', 'user', new_user.id, f'New user registered with role={role}')
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('auth.login'))
         
@@ -68,6 +71,7 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
+            log_event(user.id, 'login', 'user', user.id, f'User logged in: {user.username}')
             flash(f'Welcome back, {user.username}!', 'success')
             next_page = request.args.get('next')
             if user.role == 'admin':
@@ -84,17 +88,40 @@ def login():
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    log_event(current_user.id, 'logout', 'user', current_user.id, f'User logged out: {current_user.username}')
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
 
 
-@auth_bp.route('/profile', methods=['GET', 'POST'])
+@auth_bp.route('/notifications')
 @login_required
+def notifications():
+    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    return render_template('notifications.html', notifications=notifications)
+
+
+@auth_bp.route('/notifications/<int:notification_id>/read', methods=['POST'])
+@login_required
+def mark_notification_read(notification_id):
+    notification = Notification.query.filter_by(id=notification_id, user_id=current_user.id).first_or_404()
+    notification.is_read = True
+    db.session.commit()
+    return redirect(url_for('auth.notifications'))
+
+
+@auth_bp.route('/notifications/mark-all-read', methods=['POST'])
+@login_required
+def mark_all_notifications_read():
+    Notification.query.filter_by(user_id=current_user.id, is_read=False).update({'is_read': True})
+    db.session.commit()
+    flash('All notifications marked as read.', 'success')
+    return redirect(url_for('auth.notifications'))
+
+
+@auth_bp.route('/profile', methods=['GET', 'POST'])
+@bride_required
 def profile():
-    if current_user.role != 'bride':
-        flash('Only brides can access preferences profiles.', 'warning')
-        return redirect(url_for('main.index'))
         
     pref = UserPreference.query.filter_by(user_id=current_user.id).first()
     budget_plan = BudgetPlan.query.filter_by(user_id=current_user.id).first()

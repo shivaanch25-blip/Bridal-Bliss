@@ -1,0 +1,50 @@
+{% extends 'base.html' %} {% block title %}Notifications - Bridal Bliss{%
+endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="display-6">Notifications</h1>
+      <p class="text-muted">
+        Stay updated with your booking and order activity.
+      </p>
+    </div>
+    <form
+      action="{{ url_for('auth.mark_all_notifications_read') }}"
+      method="post"
+    >
+      <button type="submit" class="btn btn-outline-primary">
+        Mark all as read
+      </button>
+    </form>
+  </div>
+
+  {% if notifications %}
+  <div class="list-group">
+    {% for notification in notifications %}
+    <div
+      class="list-group-item d-flex justify-content-between align-items-start p-4 {% if not notification.is_read %}bg-light border border-2 border-primary{% endif %}"
+    >
+      <div>
+        <h5 class="mb-1">{{ notification.message }}</h5>
+        <p class="mb-1 text-muted small">
+          {{ notification.created_at.strftime('%b %d, %Y %H:%M') }}
+        </p>
+      </div>
+      {% if not notification.is_read %}
+      <form
+        action="{{ url_for('auth.mark_notification_read', notification_id=notification.id) }}"
+        method="post"
+      >
+        <button type="submit" class="btn btn-sm btn-primary">Mark read</button>
+      </form>
+      {% else %}
+      <span class="badge bg-success">Read</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="alert alert-info">You have no notifications at the moment.</div>
+  {% endif %}
+</div>
+{% endblock %}

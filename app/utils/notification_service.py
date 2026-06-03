@@ -1,3 +1,4 @@
+from flask import current_app
 from app.models import db, Notification
 
 def send_notification(user_id, message, simulate_sms=True, simulate_email=True):
@@ -9,20 +10,12 @@ def send_notification(user_id, message, simulate_sms=True, simulate_email=True):
     db.session.add(notif)
     db.session.commit()
 
-    # 2. Mock SMS & Email outputs to console logs
-    print(f"\n==================================================")
-    print(f"🔔 MOCK NOTIFICATION SYSTEM TRIGGERED")
-    print(f"==================================================")
-    print(f"To User ID: {user_id}")
-    print(f"Message: {message}")
-    
+    # 2. Mock external communication logs
     if simulate_sms:
-        print(f"💬 [MOCK SMS DISPATCHED] Sending text to user phone: 'Bridal Bliss: {message}'")
+        current_app.logger.info(f"[MOCK SMS] To:{user_id} Message:{message}")
     if simulate_email:
-        print(f"📧 [MOCK EMAIL DISPATCHED] Sending email to user mailbox: \n"
-              f"   Subject: Bridal Bliss Styling Alert\n"
-              f"   Body: Dear User, {message}. Visit your Bridal Bliss dashboard for details.")
-    print(f"==================================================\n")
+        current_app.logger.info(f"[MOCK EMAIL] To:{user_id} Subject: Bridal Bliss Styling Alert")
+    return notif
 
 def notify_booking_status(appointment):
     """

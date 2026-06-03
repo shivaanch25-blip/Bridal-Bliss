@@ -1,0 +1,16 @@
+{% extends "base.html" %} {% block title %}Error - Bridal Bliss{% endblock %} {%
+block content %}
+<div class="container py-5 text-center">
+  <div class="display-1 text-rose">
+    {{ error.code if error.code else 'Error' }}
+  </div>
+  <h1 class="mb-3">{{ error.name if error.name else 'Oops!' }}</h1>
+  <p class="lead text-muted">
+    {{ error.description if error.description else error.message if
+    error.message else 'An unexpected error occurred.' }}
+  </p>
+  <a href="{{ url_for('main.index') }}" class="btn btn-luxury mt-3"
+    >Return Home</a
+  >
+</div>
+{% endblock %}

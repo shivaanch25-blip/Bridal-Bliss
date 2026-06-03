@@ -1,41 +1,73 @@
-{% extends "base.html" %}
-
-{% block title %}AI Bridal Look Studio - Bridal Bliss{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}AI Bridal Look Studio - Bridal
+Bliss{% endblock %} {% block content %}
 <!-- Banner header -->
-<div class="py-5 bg-dark text-white text-center" style="background: linear-gradient(rgba(28, 34, 55, 0.8), rgba(28, 34, 55, 0.8)), url('https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;">
-    <div class="container py-4">
-        <h1 class="text-white mb-3"><i class="bi bi-stars text-warning me-2"></i>AI Bridal Look Studio</h1>
-        <p class="lead mb-4">Explore curated regional and contemporary bridal looks. Select a profile style to discover outfit recommendations and match beauty salons.</p>
-        <a href="{{ url_for('studio.customizer') }}" class="btn btn-luxury"><i class="bi bi-magic me-2"></i>Calibrate Custom Look</a>
-    </div>
+<div
+  class="py-5 bg-dark text-white text-center"
+  style="
+    background:
+      linear-gradient(rgba(28, 34, 55, 0.8), rgba(28, 34, 55, 0.8)),
+      url(&quot;https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=1200&q=80&quot;)
+        center/cover no-repeat;
+  "
+>
+  <div class="container py-4">
+    <h1 class="text-white mb-3">
+      <i class="bi bi-stars text-warning me-2"></i>AI Bridal Look Studio
+    </h1>
+    <p class="lead mb-4">
+      Explore curated regional and contemporary bridal looks. Select a profile
+      style to discover outfit recommendations and match beauty salons.
+    </p>
+    <a href="{{ url_for('studio.customizer') }}" class="btn btn-luxury"
+      ><i class="bi bi-magic me-2"></i>Calibrate Custom Look</a
+    >
+  </div>
 </div>
 
 <div class="container py-5 animate__animated animate__fadeIn">
-    <div class="row g-4">
-        {% for look in looks %}
-        <div class="col-md-4">
-            <div class="card-luxury">
-                <div class="card-img-wrap">
-                    <img src="{{ look.image_url }}" alt="{{ look.name }}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=400&q=80'">
-                </div>
-                <div class="card-body-luxury">
-                    <h3 class="card-title-luxury">{{ look.name }}</h3>
-                    <p class="small text-rose mb-3"><strong>Colors:</strong> {{ look.color_palette }}</p>
-                    <p class="card-text small text-secondary mb-4">{{ look.description[:110] }}...</p>
-                    
-                    <div class="mt-auto">
-                        <hr class="my-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="small text-muted"><i class="bi bi-chat-left-text me-1 text-rose"></i>{{ look.look_reviews | length }} Reviews</span>
-                            <a href="{{ url_for('studio.look_detail', look_id=look.id) }}" class="btn btn-luxury btn-sm">Explore Look</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="row g-4">
+    {% for look in looks %}
+    <div class="col-md-4">
+      <div class="card-luxury">
+        <div class="card-img-wrap">
+          <img
+            src="{{ look.image_url }}"
+            alt="{{ look.name }}"
+            class="card-img"
+            onerror="
+              this.src =
+                'https://images.unsplash.com/photo-1597157639073-69284ac0fded?auto=format&fit=crop&w=400&q=80'
+            "
+          />
         </div>
-        {% endfor %}
+        <div class="card-body-luxury">
+          <h3 class="card-title-luxury">{{ look.name }}</h3>
+          <p class="small text-rose mb-3">
+            <strong>Colors:</strong> {{ look.color_palette or 'Mixed tones' }}
+          </p>
+          <p class="card-text small text-secondary mb-4">
+            {{ (look.description or '')[:110] }}{% if look.description and
+            look.description|length > 110 %}...{% endif %}
+          </p>
+
+          <div class="mt-auto">
+            <hr class="my-3" />
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small text-muted"
+                ><i class="bi bi-chat-left-text me-1 text-rose"></i>{{
+                look.look_reviews | length }} Reviews</span
+              >
+              <a
+                href="{{ url_for('studio.look_detail', look_id=look.id) }}"
+                class="btn btn-luxury btn-sm"
+                >Explore Look</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}
